@@ -50,8 +50,10 @@ Bioclim_1970_2000 = "/home/pc19d/postdoc/MaxEnt_insect_dir/data/raw/worldclim_mo
 
 
 # Dictionary to store all path to the raster file for crop data
-All_crop_data = {f'{year}' : pathlib.path(os.path.join(CROP_DATA,f"{year}_30m_cdls",f"{year}_30m_cdls.tiff",)) for year in range(2008,2010)}
+All_crop_data = {f'{year}' : pathlib.Path(os.path.join(CROP_DATA,f"{year}_30m_cdls",f"{year}_30m_cdls.tif",)) for year in range(2008,2010)}
 
+# path to csv whic contain the code:crop_name entries. 
+Crop_config = pathlib.Path("/data/Maxent/data/raw/crop_data/cdl_codes_names.csv")
 
 # Configuration dictionary to store all raw data paths
 config_raw = {
@@ -60,7 +62,8 @@ config_raw = {
         'GBIF': Data_GBIF
     },
     'climate_data': pathlib.Path(Bioclim_1970_2000),
-    'crop_data': All_crop_data
+    'crop_data': All_crop_data,
+    'crop_config': Crop_config
 }
 
 

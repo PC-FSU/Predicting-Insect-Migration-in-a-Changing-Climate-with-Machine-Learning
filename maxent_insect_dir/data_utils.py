@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pathlib
 import os
+import rasterio
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -77,6 +78,11 @@ def clean_and_prepare_data_for_EDD(gdf, keep_columns, date_column='ObsDate', sta
 
     # Convert date_column to datetime format
     gdf_trimmed[date_column] = pd.to_datetime(gdf_trimmed[date_column], format='%m-%d-%y')
+    
+    # Extract day, month, and year into separate columns
+    gdf_trimmed['year'] = gdf_trimmed[date_column].dt.year
+    gdf_trimmed['month'] = gdf_trimmed[date_column].dt.month
+    gdf_trimmed['day_number'] = gdf_trimmed[date_column].dt.day
 
     return gdf_trimmed
 
@@ -108,15 +114,135 @@ def clean_and_prepare_data_for_GBIF(gdf, date_column='day'):
     
     # Convert the 'day' column to datetime format
     gdf_trimmed[date_column] = pd.to_datetime(gdf_trimmed[date_column])
-
+    
     # Extract day, month, and year into separate columns
-    gdf_trimmed['Year'] = gdf_trimmed[date_column].dt.year
+    gdf_trimmed['Year'] = gdf_trimmed['Year'].astype(int)
+    # Rename the column 'Year' to 'year', so we are consistent with EDD data
+    gdf_trimmed.rename(columns={'Year': 'year'}, inplace=True)
     gdf_trimmed['month'] = gdf_trimmed[date_column].dt.month
     gdf_trimmed['day_number'] = gdf_trimmed[date_column].dt.day
     
+    # assign a unique value for each row
+    # Set the index as a unique row identifier (use the current index)
+    gdf_trimmed = gdf_trimmed.reset_index(drop=True)
+
+    # Rename the index to 'objectid', this is done so EDD and GBIF has same column name for unique key.
+    gdf_trimmed = gdf_trimmed.rename_axis('objectid').reset_index()
+        
     return gdf_trimmed
 
 
+
+# Function to merge crop data with insect location data
+def find_crops_for_insect_locations(point_df, crop_raster_folder, id, crop_mapping_dict):
+    """
+    Identifies the crop type at specific insect locations for a given year by matching 
+    insect point data with corresponding crop raster data.
+
+    This function processes insect point data and determines which crop is planted at each 
+    insect location for the specified year. The crop data is provided in the form of raster 
+    files, where each raster file represents a crop coverage map for a particular year. 
+    The function groups insect data by year, retrieves the corresponding crop raster for 
+    that year, and samples the raster to determine the crop type at each insect location.
+
+    Parameters:
+    -----------
+    point_df : GeoDataFrame
+        A GeoDataFrame containing the insect point data with required columns including 'geometry' 
+        (for location) and 'year' (to specify which year's crop data to reference).
+    
+    crop_raster_folder : str
+        The file path to the folder containing the crop raster files for the years 2008-2023. 
+        Each year's crop raster is assumed to follow a naming convention such as '{year}_30m_cdls.tif'.
+    
+    id : str
+        The column name in point_df that uniquely identifies each insect point.
+    
+    crop_mapping_dict : dict
+        A dictionary mapping crop codes from the raster files to crop names/types. 
+        The crop codes are integers from the raster, and the dictionary translates them 
+        into human-readable crop names.
+    
+    Returns:
+    --------
+    GeoDataFrame
+        A new GeoDataFrame which includes the original insect point data along with a new column 
+        indicating the crop type (mapped from the raster data) at each insect location.
+        
+    Process:
+    --------
+    1. Groups the insect point data by the 'year' column.
+    2. For each year, opens the corresponding crop raster file.
+    3. Reprojects the insect locations to match the coordinate reference system (CRS) of the raster file.
+    4. Samples the raster at each insect location to extract the crop code from the raster.
+    5. Maps the crop code to a human-readable crop type using the provided `crop_mapping_dict`.
+    6. Merges the crop type information back into the original point GeoDataFrame.
+    7. Returns the updated GeoDataFrame with crop types.
+
+    Example Usage:
+    --------------
+    point_df = gpd.read_file('insect_locations.shp')  # GeoDataFrame with insect data
+    crop_raster_folder = 'path/to/crop_raster_folder'
+    crop_mapping_dict = {1: 'Corn', 2: 'Wheat', 3: 'Soybeans', ...}  # Example mapping
+
+    # Finding crop types at insect locations
+    updated_point_df = find_crops_for_insect_locations(point_df, crop_raster_folder, 'objectid', crop_mapping_dict)
+
+    Notes:
+    ------
+    - The crop raster files should be organized in subfolders named by year (e.g., '2008_30m_cdls', '2009_30m_cdls').
+    - The function assumes that the CRS of the insect point data will be reprojected to match the crop raster files.
+    """
+    
+    results = []
+    total_sample_processed = 0
+
+    # Group the insect point data by year
+    grouped = point_df.groupby('year')
+
+    for year, group in grouped:
+        # Count the number of samples for this year
+        sample_count = group[id].count()
+        print(f'Processing {sample_count} samples for the year {year}...\n')
+
+        # Skip years outside the available crop raster range (2008-2023)
+        if year not in range(2008, 2024):
+            continue
+
+        # Construct the raster file path for the specific year
+        raster_file = f'{crop_raster_folder}/{year}_30m_cdls/{year}_30m_cdls.tif'
+        
+        # Open the raster file and extract crop values at insect locations
+        with rasterio.open(raster_file) as src:
+            # Reproject the insect points to match the raster's CRS
+            group = group.to_crs(src.crs)
+            
+            # Iterate over each insect point in the group
+            for idx, row in group.iterrows():
+                insect_location = [(row.geometry.x, row.geometry.y)]
+                
+                # Sample the raster to find the crop code at the insect location
+                crop_code = list(src.sample(insect_location))[0][0]
+                
+                # Append the result to the results list
+                results.append({
+                    'insect_id': row[id],
+                    'crop_code': crop_code
+                })
+        
+        total_sample_processed += sample_count
+    
+    # Print total processed samples
+    print(f'Processed_samples/total_samples: {total_sample_processed}/{point_df.shape[0]}')
+
+    # Convert results into a DataFrame
+    result_df = pd.DataFrame(results)
+    result_df['crop'] = result_df['crop_code'].map(crop_mapping_dict)
+
+    # Merge the crop data back into the original point DataFrame
+    point_df = pd.merge(point_df, result_df, how='left', left_on=id, right_on='insect_id')
+
+    return point_df
 
 
 
