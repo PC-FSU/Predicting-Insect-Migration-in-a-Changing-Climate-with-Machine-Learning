@@ -241,7 +241,10 @@ def find_crops_for_insect_locations(point_df, crop_raster_folder, id, crop_mappi
 
     # Merge the crop data back into the original point DataFrame
     point_df = pd.merge(point_df, result_df, how='left', left_on=id, right_on='insect_id')
-
+    
+    # perform data imputation. Replace none/nodata value with mode of crop column
+    point_df.loc[(point_df['crop'].isna()) | (point_df['crop'] == 'NoData'), 'crop'] = point_df['crop'].mode()[0]
+    
     return point_df
 
 
