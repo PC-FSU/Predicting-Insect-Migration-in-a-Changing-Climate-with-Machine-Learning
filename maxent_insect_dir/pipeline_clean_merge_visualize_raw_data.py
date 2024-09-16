@@ -1,6 +1,6 @@
 # Common Setup
 from maxent_insect_dir import config
-from data_utils import *
+from raw_data_utilis import *
 
 # Define paths and insect name
 INSECT_NAME = 'Root_Weevil'
