@@ -20,6 +20,11 @@ GBIF_DATA_PATH = pathlib.Path("/data/Maxent/data/raw/Species Data/Guna/GBIF Site
 #Path to the folder where all crop data is present.
 CROP_DATA = pathlib.Path("/data/Maxent/data/raw/crop_data")
 
+
+#Path to BioClim Data
+BIOCLIM_DATA = pathlib.Path("/data/Maxent/data/raw/BioCLim/data")
+
+
 Insect_list = {
     'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(EDD_DATA_PATH, "Brown_Marmorated_Stink_Bug - (Halyomorpha_halys) (1999_2023).gpkg")),
     'Corn_Earworm': pathlib.Path(os.path.join(EDD_DATA_PATH, "Corn_Earworm - (Helicoverpa_Zea) (2004-2023).gpkg")),
@@ -48,7 +53,6 @@ Bioclim_1970_2000 = "/home/pc19d/postdoc/MaxEnt_insect_dir/data/raw/worldclim_mo
 
 
 
-
 # Dictionary to store all path to the raster file for crop data
 All_crop_data = {f'{year}' : pathlib.Path(os.path.join(CROP_DATA,f"{year}_30m_cdls",f"{year}_30m_cdls.tif",)) for year in range(2008,2010)}
 
@@ -63,7 +67,8 @@ config_raw = {
     },
     'climate_data': pathlib.Path(Bioclim_1970_2000),
     'crop_data': All_crop_data,
-    'crop_config': Crop_config
+    'crop_config': Crop_config,
+    'BioClim_data' : BIOCLIM_DATA
 }
 
 
