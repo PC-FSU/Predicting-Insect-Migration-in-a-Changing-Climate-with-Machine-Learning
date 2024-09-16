@@ -6,7 +6,7 @@ import os
 
 
 # Path to save initial visualization of insect map and time series
-PATH_TO_SAVE_INITIAL_DATA_VIS_INSECT = pathlib.Path("/data/Maxent/data/raw/Species Data/Guna/image/readme")
+PATH_TO_SAVE_INITIAL_DATA_VIS_INSECT = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/reports/figures")
 
 # Path to save intermediatory processed insect data. 
 PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA = pathlib.Path("/data/Maxent/data/interim")
