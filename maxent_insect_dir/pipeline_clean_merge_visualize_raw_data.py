@@ -2,10 +2,9 @@
 from maxent_insect_dir import config
 from data_utils import *
 
-
 # Define paths and insect name
-INSECT_NAME = 'Brown_Marmorated_Stink_bug'  
-DOWNLOAD_SOURCE = 'EDD' # either GBIF or EDD
+INSECT_NAME = 'Root_Weevil'
+DOWNLOAD_SOURCE = 'GBIF'  # either GBIF or EDD
 INSECT_DATA = config.config_raw['insect'][DOWNLOAD_SOURCE][INSECT_NAME]
 INTERIM_PATH = config.PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA
 PATH_SAVE_FIG = config.PATH_TO_SAVE_INITIAL_DATA_VIS_INSECT
@@ -13,102 +12,72 @@ PATH_SAVE_FIG = config.PATH_TO_SAVE_INITIAL_DATA_VIS_INSECT
 # Load the presence data
 presence = safe_read_file(INSECT_DATA)
 
-#load crop mapping
+# Load crop mapping and create a mapping dictionary
 crop_mapping = pd.read_csv(config.config_raw['crop_config'])
-# Create a mapping dictionary
 crop_mapping_dict = dict(zip(crop_mapping['Code'], crop_mapping['Crop']))
 
-print(f'We are looking at insect : {INSECT_NAME}, which is downloaded from the source : {DOWNLOAD_SOURCE}.............\n\n\n\n')
+print(f'We are looking at insect: {INSECT_NAME}, downloaded from the source: {DOWNLOAD_SOURCE}...\n\n')
 
+def clean_insect_data(source, presence):
+    """Cleans insect data based on the source (GBIF or EDD)."""
+    if source == 'GBIF':
+        return clean_and_prepare_data_for_GBIF(presence, date_column='day')
+    else:
+        return clean_and_prepare_data_for_EDD(
+            presence,
+            keep_columns=['objectid', 'ObsDate', 'DateEnt', 'OccStatus', 'NumCollect', 'Latitude', 'Longitude', 'geometry'],
+            date_column='ObsDate',
+            status_column='OccStatus',
+            count_column='NumCollect'
+        )
+
+def get_crop_bioclim_intersection(cleaned_data, crop_mapping_dict):
+    """Performs crop and bioclimatic data intersection for insect data."""
+    # Get the crop intersection
+    cleaned_crop_data = find_crops_for_insect_locations(
+        point_df=cleaned_data,
+        crop_raster_folder=config.CROP_DATA,
+        id_column='objectid',
+        crop_mapping_dict=crop_mapping_dict
+    )
+
+    # Get the Bioclim intersection
+    return bioclim_insect_intersection(
+        climate_data_path=config.config_raw['BioClim_data'],
+        insect_crop_data=cleaned_crop_data,
+        id_column='objectid'
+    )
+
+def plot_and_save_data(cleaned_bioclim_data, save_fig_path, insect_name, source, date_column, marker_size_col=None):
+    """Plots and saves cleaned bioclimatic data."""
+    # Plot the data
+    plot_data(
+        gdf=cleaned_bioclim_data,
+        save_path=save_fig_path,
+        insect_name=insect_name,
+        date_column=date_column,
+        markersize_col=marker_size_col
+    )
+
+    # Save the cleaned and processed data
+    cleaned_bioclim_data.to_file(
+        os.path.join(INTERIM_PATH, f'{insect_name}_{source}_intermediatory.gpkg'),
+        driver='GPKG',
+        layer='PointLayer'
+    )
 
 # Clean and prepare the data
+print(f'Step 1: Cleaning raw insect data...\n\n')
+presence_cleaned = clean_insect_data(DOWNLOAD_SOURCE, presence)
+
+# Get crop and bioclim intersection
+print(f'Step 2: Getting intersection between insect data, crop data, and BioClim data...\n\n')
+presence_cleaned_crop_bioclim = get_crop_bioclim_intersection(presence_cleaned, crop_mapping_dict)
+
+# Plot and save the data
+print(f'Step 3: Plotting data distributions and saving the results...\n\n')
 if DOWNLOAD_SOURCE == 'GBIF':
-    # Clean the data
-    print(f'\n\n\n\nStep 1: Clean the raw insect data.............\n\n\n\n')
-    presence_cleaned = clean_and_prepare_data_for_GBIF(
-        presence,
-        date_column='day'
-    )
-    
-    # Get the crop intersection
-    print(f'\n\n\n\nStep 2: Get the intersection between insect data and crop data.............\n\n\n\n')
-    presence_cleaned_crop = find_crops_for_insect_locations(
-        point_df=presence_cleaned,
-        crop_raster_folder=config.CROP_DATA,
-        id_column = 'objectid',
-        crop_mapping_dict=crop_mapping_dict
-    )
-    
-    # Get the Bioclim intersection
-    print(f'\n\n\n\nStep 3: Get the intersection between BioClim data and crop+insect data.............\n\n\n\n')
-    presence_cleaned_crop_bioclim = bioclim_insect_intersection(
-        climate_data_path=config.config_raw['BioClim_data'],
-        insect_crop_data=presence_cleaned_crop,
-        id_column='objectid'
-    )
-    
-    # Plot the data
-    print(f'\n\n\n\nStep 4: plot the data distributions .............\n\n\n\n')
-    plot_data(
-        gdf = presence_cleaned_crop_bioclim,
-        save_path=PATH_SAVE_FIG,
-        insect_name=INSECT_NAME, 
-        date_column='day'
-    )
-    
-    # Save the data
-    print(f'\n\n\n\nStep 5: Save the cleaned and processed data at {INTERIM_PATH}.............\n\n\n\n')
-    presence_cleaned_crop_bioclim.to_file(
-        os.path.join(INTERIM_PATH, f'{INSECT_NAME}_{DOWNLOAD_SOURCE}_intermediatory.gpkg'),
-        driver='GPKG',
-        layer='PointLayer'
-    )
-    
+    plot_and_save_data(presence_cleaned_crop_bioclim, PATH_SAVE_FIG, INSECT_NAME, DOWNLOAD_SOURCE, date_column='day')
 else:
-    # Clean the data
-    print(f'\n\n\n\nStep 1: Clean the raw insect data.............\n\n\n\n')
-    presence_cleaned = clean_and_prepare_data_for_EDD(
-        presence,
-        keep_columns=['objectid','ObsDate','DateEnt','OccStatus','NumCollect','Latitude','Longitude','geometry'],
-        date_column='ObsDate',
-        status_column='OccStatus',
-        count_column='NumCollect'
-    )
-    
-    
-    # Get the crop intersection
-    print(f'\n\n\n\nStep 2: Get the intersection between insect data and crop data.............\n\n\n\n')
-    presence_cleaned_crop = find_crops_for_insect_locations(
-        point_df=presence_cleaned,
-        crop_raster_folder=config.CROP_DATA,
-        id_column = 'objectid',
-        crop_mapping_dict=crop_mapping_dict
-    )
-    
-    # Get the Bioclim intersection
-    print(f'\n\n\n\nStep 3: Get the intersection between BioClim data and crop+insect data.............\n\n\n\n')
-    presence_cleaned_crop_bioclim = bioclim_insect_intersection(
-        climate_data_path=config.config_raw['BioClim_data'],
-        insect_crop_data=presence_cleaned_crop,
-        id_column='objectid'
-    )
-    
-    # Plot the data
-    print(f'\n\n\n\nStep 4: plot the data distributions\n\n\n')
-    plot_data(
-        gdf=presence_cleaned_crop_bioclim,
-        save_path=PATH_SAVE_FIG,
-        insect_name=INSECT_NAME,
-        markersize_col='NumCollect_int', # This should be in returned df from clean_and_prepare_data_for_EDD
-        date_column='ObsDate'
-    )
-    
-    # Save the data
-    print(f'\n\n\n\nStep 5: Save the cleaned and processed data at {INTERIM_PATH}\n\n\n\n')
-    presence_cleaned_crop_bioclim.to_file(
-        os.path.join(INTERIM_PATH, f'{INSECT_NAME}_{DOWNLOAD_SOURCE}_intermediatory.gpkg'),
-        driver='GPKG',
-        layer='PointLayer'
-    )
-    
-    
+    plot_and_save_data(presence_cleaned_crop_bioclim, PATH_SAVE_FIG, INSECT_NAME, DOWNLOAD_SOURCE, date_column='ObsDate', marker_size_col='NumCollect_int')
+
