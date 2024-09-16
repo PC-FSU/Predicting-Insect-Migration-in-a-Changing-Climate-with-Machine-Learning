@@ -6,6 +6,9 @@ import pandas as pd
 import pathlib
 import os
 import rasterio
+import numpy as np
+import xarray as xr
+
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -134,7 +137,7 @@ def clean_and_prepare_data_for_GBIF(gdf, date_column='day'):
 
 
 # Function to merge crop data with insect location data
-def find_crops_for_insect_locations(point_df, crop_raster_folder, id, crop_mapping_dict):
+def find_crops_for_insect_locations(point_df, crop_raster_folder, id_column, crop_mapping_dict):
     """
     Identifies the crop type at specific insect locations for a given year by matching 
     insect point data with corresponding crop raster data.
@@ -155,7 +158,7 @@ def find_crops_for_insect_locations(point_df, crop_raster_folder, id, crop_mappi
         The file path to the folder containing the crop raster files for the years 2008-2023. 
         Each year's crop raster is assumed to follow a naming convention such as '{year}_30m_cdls.tif'.
     
-    id : str
+    id_column : str
         The column name in point_df that uniquely identifies each insect point.
     
     crop_mapping_dict : dict
@@ -202,7 +205,7 @@ def find_crops_for_insect_locations(point_df, crop_raster_folder, id, crop_mappi
 
     for year, group in grouped:
         # Count the number of samples for this year
-        sample_count = group[id].count()
+        sample_count = group[id_column].count()
         print(f'Processing {sample_count} samples for the year {year}...\n')
 
         # Skip years outside the available crop raster range (2008-2023)
@@ -226,7 +229,7 @@ def find_crops_for_insect_locations(point_df, crop_raster_folder, id, crop_mappi
                 
                 # Append the result to the results list
                 results.append({
-                    'insect_id': row[id],
+                    'insect_id': row[id_column],
                     'crop_code': crop_code
                 })
         
@@ -240,13 +243,94 @@ def find_crops_for_insect_locations(point_df, crop_raster_folder, id, crop_mappi
     result_df['crop'] = result_df['crop_code'].map(crop_mapping_dict)
 
     # Merge the crop data back into the original point DataFrame
-    point_df = pd.merge(point_df, result_df, how='left', left_on=id, right_on='insect_id')
+    point_df = pd.merge(point_df, result_df, how='left', left_on=id_column, right_on='insect_id')
     
     # perform data imputation. Replace none/nodata value with mode of crop column
     point_df.loc[(point_df['crop'].isna()) | (point_df['crop'] == 'NoData'), 'crop'] = point_df['crop'].mode()[0]
     
     return point_df
 
+
+# Function to merge insect_crop data with bioclim variable
+def bioclim_insect_intersection(climate_data_path, insect_crop_data, id_column):
+    """
+    Extracts bioclimatic values from a set of .netcdf files at the locations and years 
+    specified in the insect_crop_data and adds them as columns in the GeoDataFrame.
+
+    Parameters:
+    -----------
+    climate_data_path : str
+        The path to the directory containing .netcdf files with bioclimatic data.
+    insect_crop_data : GeoDataFrame
+        A GeoDataFrame containing point geometries (latitude, longitude) and year of observation.
+    id_column : str
+        The name of the column in insect_crop_data that contains unique identifiers for the data points.
+
+    Returns:
+    --------
+    GeoDataFrame
+        The input GeoDataFrame with additional columns containing the bioclimatic variable values 
+        at the coordinates and years corresponding to the insect_crop_data points.
+    """
+    
+    # Step 1: Load and sort all .netcdf files from the given path
+    netcdf_files = sorted([f for f in os.listdir(climate_data_path) if f.endswith('.nc')])
+    
+    # Step 2: Read all the netcdf files into a dictionary where the key is the variable name
+    bioclim_data_dict = {}
+    for idx, nc_file in enumerate(netcdf_files):
+        file_path = os.path.join(climate_data_path, nc_file)
+        dataset = xr.open_dataset(file_path)
+        variable_name = list(dataset.data_vars)[0]  # Assuming each file has a unique variable
+        bioclim_data_dict[variable_name] = dataset
+        
+        if idx == 0:    
+            # Get latitude and longitude from the bioclim data. All files has same latitude and longitude grid.
+            bioclim_lats = dataset['latitude'].values
+            bioclim_lons = dataset['longitude'].values
+        
+        print(f"{file_path.split('_')[0]} | the latitude shape : {raw_data['latitude'].values.shape} | the longitude shape : {raw_data['longitude'].values.shape} | the time slices : {raw_data['time'].values.shape}")
+    
+    
+    # Step 3: Add bioclimatic variables as columns to the insect_crop_data, initialized to zero
+    for variable_name in bioclim_data_dict.keys():
+        insect_crop_data[variable_name] = 0.0  # Initialize with zeros
+    
+    # Step 4: Group the insect point data by year
+    grouped = insect_crop_data.groupby('year')
+
+    # Step 5: Iterate over each year and group of insect points, then extract bioclimatic values
+    for year, group in grouped:
+        
+        # Count the number of samples for this year
+        sample_count = group[id_column].count()
+        
+        # Bioclim data starts at year 1950 (adjust as needed)
+        time_idx = year - 1950
+        
+        
+        print(f'Processing {sample_count} samples for the year {year}, and time_idx in netcdf file {time_idx}...')
+        
+        # Iterate over each insect point in the group
+        for idx, row in group.iterrows():
+            longitude, latitude = row.geometry.x, row.geometry.y
+            
+            # Iterate over each bioclimatic dataset (each variable) in the dictionary
+            for variable_name, bioclim_data in bioclim_data_dict.items():
+                
+                assert year == bioclim_data['time'].dt.year[time_idx].item(), f'Something wrong with the year. The insect_data year is {year}, the bioclim data year is {bioclim_data['time'].dt.year[time_idx].item()}'
+                
+                # Find the nearest indices in the bioclimatic data
+                lat_idx = np.abs(bioclim_lats - latitude).argmin()
+                lon_idx = np.abs(bioclim_lons - longitude).argmin()
+                
+                # Extract the value for the current variable, year, and point location
+                bioclim_value = bioclim_data.isel(time=time_idx, latitude=lat_idx, longitude=lon_idx)[variable_name].values.item()
+                
+                # Update the corresponding row and column in insect_crop_data with the extracted value
+                insect_crop_data.at[idx, variable_name] = bioclim_value
+    
+    return insect_crop_data
 
 
 # Function to plot the data
