@@ -29,24 +29,30 @@ if DOWNLOAD_SOURCE == 'GBIF':
     )
         
     # Get the crop intersection
-    presence_cleaned_with_crop = find_crops_for_insect_locations(
+    presence_cleaned_crop = find_crops_for_insect_locations(
         point_df=presence_cleaned,
         crop_raster_folder=config.CROP_DATA,
-        id = 'objectid',
+        id_column = 'objectid',
         crop_mapping_dict=crop_mapping_dict
     )
-
+    
+    # Get the Bioclim intersection
+    presence_cleaned_crop_bioclim = bioclim_insect_intersection(
+        climate_data_path=config.config_raw['BioClim_data'],
+        insect_crop_data=presence_cleaned_crop,
+        id_column='objectid'
+    )
     
     # Plot the data
     plot_data(
-        gdf = presence_cleaned_with_crop,
+        gdf = presence_cleaned_crop_bioclim,
         save_path=PATH_SAVE_FIG,
         insect_name=INSECT_NAME, 
         date_column='day'
     )
     
     # Save the data
-    presence_cleaned_with_crop.to_file(
+    presence_cleaned_crop_bioclim.to_file(
         os.path.join(INTERIM_PATH, f'{INSECT_NAME}_{DOWNLOAD_SOURCE}_intermediatory.gpkg'),
         driver='GPKG',
         layer='PointLayer'
@@ -64,16 +70,23 @@ else:
     
     
     # Get the crop intersection
-    presence_cleaned_with_crop = find_crops_for_insect_locations(
+    presence_cleaned_crop = find_crops_for_insect_locations(
         point_df=presence_cleaned,
         crop_raster_folder=config.CROP_DATA,
-        id = 'objectid',
+        id_column = 'objectid',
         crop_mapping_dict=crop_mapping_dict
+    )
+    
+    # Get the Bioclim intersection
+    presence_cleaned_crop_bioclim = bioclim_insect_intersection(
+        climate_data_path=config.config_raw['BioClim_data'],
+        insect_crop_data=presence_cleaned_crop,
+        id_column='objectid'
     )
     
     # Plot the data
     plot_data(
-        gdf=presence_cleaned,
+        gdf=presence_cleaned_crop_bioclim,
         save_path=PATH_SAVE_FIG,
         insect_name=INSECT_NAME,
         markersize_col='NumCollect_int', # This should be in returned df from clean_and_prepare_data_for_EDD
@@ -81,7 +94,7 @@ else:
     )
     
     # Save the data
-    presence_cleaned_with_crop.to_file(
+    presence_cleaned_crop_bioclim.to_file(
         os.path.join(INTERIM_PATH, f'{INSECT_NAME}_{DOWNLOAD_SOURCE}_intermediatory.gpkg'),
         driver='GPKG',
         layer='PointLayer'
