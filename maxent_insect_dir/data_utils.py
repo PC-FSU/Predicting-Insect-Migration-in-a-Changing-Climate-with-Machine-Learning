@@ -289,7 +289,7 @@ def bioclim_insect_intersection(climate_data_path, insect_crop_data, id_column):
             bioclim_lats = dataset['latitude'].values
             bioclim_lons = dataset['longitude'].values
         
-        print(f"{file_path.split('_')[0]} | the latitude shape : {raw_data['latitude'].values.shape} | the longitude shape : {raw_data['longitude'].values.shape} | the time slices : {raw_data['time'].values.shape}")
+        print(f"{file_path.split('_')[0]} | the latitude shape : {dataset['latitude'].values.shape} | the longitude shape : {dataset['longitude'].values.shape} | the time slices : {dataset['time'].values.shape}")
     
     
     # Step 3: Add bioclimatic variables as columns to the insect_crop_data, initialized to zero
@@ -334,7 +334,7 @@ def bioclim_insect_intersection(climate_data_path, insect_crop_data, id_column):
 
 
 # Function to plot the data
-def plot_data(gdf, save_path, insect_name, markersize_col=None, date_column='day'):
+def plot_data(gdf, save_path, insect_name, markersize_col=None, date_column='day', show_plots=True):
     """
     Plots spatial and temporal data of insect observations.
 
@@ -344,11 +344,13 @@ def plot_data(gdf, save_path, insect_name, markersize_col=None, date_column='day
         insect_name (str): The name of the insect being observed, used in the plot filenames.
         markersize_col (str, optional): The column name to be used for determining the size of the markers in the geographic plot. Default is None.
         date_column (str, optional): The name of the date column. Default is 'day'.
+        show_plots (bool, optional): Whether to display the plots. Default is True.
 
     Returns:
         None
     """
-    # Plot the points, with size corresponding to the number of bugs observed
+    
+    # Plot the points inside a US map, with size of point corresponding to the number of bugs observed
     if isinstance(markersize_col, str):
         gdf.plot(marker='o', column='label', markersize=gdf[markersize_col], cmap='viridis', legend=True)  
     else:
@@ -357,21 +359,50 @@ def plot_data(gdf, save_path, insect_name, markersize_col=None, date_column='day
     plt.title("Number of Bugs Observed at Locations")
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
-    plt.tight_layout()
+    plt.tight_layout()  # Ensures layout is nice
     
     if isinstance(save_path, (str, pathlib.PosixPath)):  
         plt.savefig(os.path.join(save_path, insect_name + '_map.png'))
-    plt.show()
-    
-    # Plotting a time series plot
+    if show_plots:
+        plt.show()
+    else:
+        plt.close()
+
+    # Plotting a time series plot, which shows how many bugs have been observed over different years
     plt.figure(figsize=(15, 4))
     gdf.groupby(date_column).size().sort_index().plot(kind='line', marker='o')
     plt.title('Time Series of Observations')
     plt.xlabel('Date')
     plt.ylabel('Number of Observations')
     plt.xticks(rotation=45)
-    plt.tight_layout()
+    plt.tight_layout()  # Ensures layout is nice
     
     if isinstance(save_path, (str, pathlib.PosixPath)):
         plt.savefig(os.path.join(save_path, insect_name + '_timeline.png'))
-    plt.show()
+    if show_plots:
+        plt.show()
+    else:
+        plt.close()
+
+    # Plot a histogram showing the crop distribution in the data
+    gdf['crop'].hist(figsize=(20, 5), grid=False)
+    plt.xticks(rotation=90)
+    plt.tight_layout()  # Ensures layout is nice
+    
+    if isinstance(save_path, (str, pathlib.PosixPath)):
+        plt.savefig(os.path.join(save_path, insect_name + '_cropDistribution.png'))
+    if show_plots:
+        plt.show()
+    else:
+        plt.close()
+
+    # Plot histograms for all columns (especially bioclim data)
+    gdf.hist(figsize=(30, 20), grid=False)
+    plt.tight_layout()  # Ensures layout is nice
+    
+    if isinstance(save_path, (str, pathlib.PosixPath)):
+        plt.savefig(os.path.join(save_path, insect_name + '_BioClimDistribution.png'))
+    if show_plots:
+        plt.show()
+    else:
+        plt.close()
