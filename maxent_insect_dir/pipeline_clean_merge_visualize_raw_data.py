@@ -6,8 +6,26 @@ from raw_data_utilis import *
 INSECT_NAME = 'Root_Weevil'
 DOWNLOAD_SOURCE = 'GBIF'  # either GBIF or EDD
 INSECT_DATA = config.config_raw['insect'][DOWNLOAD_SOURCE][INSECT_NAME]
-INTERIM_PATH = config.PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA
-PATH_SAVE_FIG = config.PATH_TO_SAVE_INITIAL_DATA_VIS_INSECT
+INTERIM_PATH = os.path.join(config.PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, 'ERA5') #updating the interim path
+PATH_SAVE_FIG = os.path.join(config.PATH_TO_SAVE_INITIAL_DATA_VIS_INSECT, 'ERA5')   #updating the savefig path
+
+
+# Check if the directory exists
+if not os.path.exists(INTERIM_PATH):
+    # If it doesn't exist, create the directory
+    os.makedirs(INTERIM_PATH)
+    print(f"Directory {INTERIM_PATH} created.")
+else:
+    print(f"Directory {INTERIM_PATH} already exists.")
+
+
+if not os.path.exists(PATH_SAVE_FIG):
+    # If it doesn't exist, create the directory
+    os.makedirs(PATH_SAVE_FIG)
+    print(f"Directory {PATH_SAVE_FIG} created.")
+else:
+    print(f"Directory {PATH_SAVE_FIG} already exists.")
+    
 
 # Load the presence data
 presence = safe_read_file(INSECT_DATA)
