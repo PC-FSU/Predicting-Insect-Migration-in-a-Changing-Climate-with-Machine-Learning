@@ -4,8 +4,8 @@ from raw_data_utilis import *
 from worldclim_data_utilis import *
 
 # Define paths and insect name
-INSECT_NAME = 'Root_Weevil'
-DOWNLOAD_SOURCE = 'GBIF'  # either GBIF or EDD
+INSECT_NAME = 'Brown_Marmorated_Stink_bug'
+DOWNLOAD_SOURCE = 'EDD'  # either GBIF or EDD
 INSECT_DATA = config.config_raw['insect'][DOWNLOAD_SOURCE][INSECT_NAME]
 INTERIM_PATH = os.path.join(config.PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, 'WorldClim') #updating the interim path
 PATH_SAVE_FIG = os.path.join(config.PATH_TO_SAVE_INITIAL_DATA_VIS_INSECT, 'WorldClim')   #updating the savefig path
@@ -51,6 +51,8 @@ def clean_insect_data(source, presence):
 
 def get_crop_bioclim_intersection(cleaned_data, crop_mapping_dict):
     """Performs crop and bioclimatic data intersection for insect data."""
+    
+    print('\n.......Getting the crop intersection......\n')
     # Get the crop intersection
     cleaned_crop_data = find_crops_for_insect_locations(
         point_df=cleaned_data,
@@ -59,10 +61,19 @@ def get_crop_bioclim_intersection(cleaned_data, crop_mapping_dict):
         crop_mapping_dict=crop_mapping_dict
     )
 
-    # Get the Bioclim intersection
-    return worldclimbioclim_yearlyavg_insect_intersection(
-        climate_data_path=config.config_raw['BioClim_data'],
+    print('\n.......Getting the yearly avg for Bioclim......\n')
+    # Get the Bioclim intersection using worldclim dataset -- the yearly averages
+    insect_crop_data_with_yearly_avg =  worldclimbioclim_yearlyavg_insect_intersection(
+        climate_data_path=config.config_worldclim['yearly_avg']['1970_2020'],
         insect_crop_data=cleaned_crop_data
+    )
+    
+    print('\n.......Getting the monthly avg for Bioclim......\n')
+    # Get the Bioclim intersection using worldclim dataset -- the monthly averages
+    return worldclimbioclim_monthlyyavg_insect_intersection(
+        climate_data_path=config.config_worldclim['monthly_avg'],
+        insect_crop_data=insect_crop_data_with_yearly_avg,
+        id_column='objectid'
     )
 
 def plot_and_save_data(cleaned_bioclim_data, save_fig_path, insect_name, source, date_column, marker_size_col=None):

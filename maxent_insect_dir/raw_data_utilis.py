@@ -383,6 +383,8 @@ def plot_data(gdf, save_path, insect_name, markersize_col=None, date_column='day
         plt.show()
     else:
         plt.close()
+        
+    print(gdf.head(2))
 
     # Plot a histogram showing the crop distribution in the data
     gdf['crop'].hist(figsize=(20, 5), grid=False)

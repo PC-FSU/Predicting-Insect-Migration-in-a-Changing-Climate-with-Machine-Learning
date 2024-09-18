@@ -74,13 +74,23 @@ config_raw = {
 
 # config dictionary for interim data. the path is same as where the interim data were saved.
 
-config_interim = {
+config_interim_ERA5 = {
     'insect' : {
-        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
-        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "Corn_Earworm_EDD_intermediatory.gpkg")),
-        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
-        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
-        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "Root_Weevil_GBIF_intermediatory.gpkg"))
+        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "ERA5", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
+        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "ERA5", "Corn_Earworm_EDD_intermediatory.gpkg")),
+        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "ERA5", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
+        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "ERA5", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
+        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "ERA5", "Root_Weevil_GBIF_intermediatory.gpkg"))
+    }
+}
+
+config_interim_WorldClim = {
+    'insect' : {
+        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
+        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Corn_Earworm_EDD_intermediatory.gpkg")),
+        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
+        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
+        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Root_Weevil_GBIF_intermediatory.gpkg"))
     }
 }
 

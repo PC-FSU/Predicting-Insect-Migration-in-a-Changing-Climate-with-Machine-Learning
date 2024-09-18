@@ -3,8 +3,8 @@ from maxent_insect_dir import config
 from raw_data_utilis import *
 
 # Define paths and insect name
-INSECT_NAME = 'Root_Weevil'
-DOWNLOAD_SOURCE = 'GBIF'  # either GBIF or EDD
+INSECT_NAME = 'Brown_Marmorated_Stink_bug'
+DOWNLOAD_SOURCE = 'EDD'  # either GBIF or EDD
 INSECT_DATA = config.config_raw['insect'][DOWNLOAD_SOURCE][INSECT_NAME]
 INTERIM_PATH = os.path.join(config.PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, 'ERA5') #updating the interim path
 PATH_SAVE_FIG = os.path.join(config.PATH_TO_SAVE_INITIAL_DATA_VIS_INSECT, 'ERA5')   #updating the savefig path
