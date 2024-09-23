@@ -86,6 +86,19 @@ def clean_and_prepare_data_for_EDD(gdf, keep_columns, date_column='ObsDate', sta
     gdf_trimmed['year'] = gdf_trimmed[date_column].dt.year
     gdf_trimmed['month'] = gdf_trimmed[date_column].dt.month
     gdf_trimmed['day_number'] = gdf_trimmed[date_column].dt.day
+    
+    # add column for state and country, and drop the location column
+    if 'Location' in gdf_trimmed.columns:
+        split_location = gdf_trimmed['Location'].str.split(',', expand=True)
+        # Select the second and third columns (state and country)
+        gdf_trimmed['state'] = split_location[1].str.strip().str.lower().str.replace('"','')
+        gdf_trimmed['country'] = split_location[2].str.strip().str.lower().str.replace('"','')
+        gdf_trimmed = gdf_trimmed.drop(['Location'], axis=1)
+        
+    # drop all point where country is not united states
+    allowed_countries = ['united states', 'us', 'unitedstates', 'unitedstate'] # assuming data can take this value
+    # Filter the DataFrame to keep only the rows where 'country' is in the allowed list
+    gdf_trimmed = gdf_trimmed[gdf_trimmed['country'].str.lower().isin(allowed_countries)]
 
     return gdf_trimmed
 
@@ -124,6 +137,16 @@ def clean_and_prepare_data_for_GBIF(gdf, date_column='day'):
     gdf_trimmed.rename(columns={'Year': 'year'}, inplace=True)
     gdf_trimmed['month'] = gdf_trimmed[date_column].dt.month
     gdf_trimmed['day_number'] = gdf_trimmed[date_column].dt.day
+    
+    # Drop all the point where locality != 'US' if locality exist in dataframe columns
+    if 'locality' in gdf_trimmed.columns:
+        print('\nRemoved non-us samples.....\n\n')
+        gdf_trimmed = gdf_trimmed[gdf_trimmed['locality'] == 'US']
+        
+    # rename 'occurrence' to 'state', and lowercase each entry.
+    gdf_trimmed.rename(columns={'occurrence': 'state'}, inplace=True)
+    gdf_trimmed['state'] = gdf_trimmed['state'].str.lower()
+    
     
     # assign a unique value for each row
     # Set the index as a unique row identifier (use the current index)

@@ -43,7 +43,7 @@ def clean_insect_data(source, presence):
     else:
         return clean_and_prepare_data_for_EDD(
             presence,
-            keep_columns=['objectid', 'ObsDate', 'DateEnt', 'OccStatus', 'NumCollect', 'Latitude', 'Longitude', 'geometry'],
+            keep_columns=['objectid', 'ObsDate', 'DateEnt', 'OccStatus', 'NumCollect', 'Latitude', 'Longitude', 'geometry', 'Location'], # the location column will be used to create state, and country column
             date_column='ObsDate',
             status_column='OccStatus',
             count_column='NumCollect'
