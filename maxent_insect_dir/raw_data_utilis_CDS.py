@@ -47,7 +47,6 @@ def safe_read_file(file_path, layer_name=None):
 
 
 
-
 # Function to clean and prepare data downloaded from EDD website.
 def clean_and_prepare_data_for_EDD(gdf, keep_columns, date_column='ObsDate', status_column='OccStatus', count_column='NumCollect'):
     """
@@ -95,10 +94,10 @@ def clean_and_prepare_data_for_EDD(gdf, keep_columns, date_column='ObsDate', sta
         gdf_trimmed['country'] = split_location[2].str.strip().str.lower().str.replace('"','')
         gdf_trimmed = gdf_trimmed.drop(['Location'], axis=1)
         
-    # drop all point where country is not united states
-    allowed_countries = ['united states', 'us', 'unitedstates', 'unitedstate'] # assuming data can take this value
-    # Filter the DataFrame to keep only the rows where 'country' is in the allowed list
-    gdf_trimmed = gdf_trimmed[gdf_trimmed['country'].str.lower().isin(allowed_countries)]
+        # drop all point where country is not united states
+        allowed_countries = ['united states', 'us', 'unitedstates', 'unitedstate'] # assuming data can take this value
+        # Filter the DataFrame to keep only the rows where 'country' is in the allowed list
+        gdf_trimmed = gdf_trimmed[gdf_trimmed['country'].str.lower().isin(allowed_countries)]
 
     return gdf_trimmed
 
@@ -160,7 +159,7 @@ def clean_and_prepare_data_for_GBIF(gdf, date_column='day'):
 
 
 # Function to merge crop data with insect location data
-def find_crops_for_insect_locations(point_df, crop_raster_folder, id_column, crop_mapping_dict):
+def find_crops_for_insect_locations(point_df, crop_raster_config, id_column, crop_mapping_dict):
     """
     Identifies the crop type at specific insect locations for a given year by matching 
     insect point data with corresponding crop raster data.
@@ -177,8 +176,8 @@ def find_crops_for_insect_locations(point_df, crop_raster_folder, id_column, cro
         A GeoDataFrame containing the insect point data with required columns including 'geometry' 
         (for location) and 'year' (to specify which year's crop data to reference).
     
-    crop_raster_folder : str
-        The file path to the folder containing the crop raster files for the years 2008-2023. 
+    crop_raster_config : str
+        The dict that contain the folder path containing the crop raster files for the years 2008-2023. 
         Each year's crop raster is assumed to follow a naming convention such as '{year}_30m_cdls.tif'.
     
     id_column : str
@@ -236,7 +235,7 @@ def find_crops_for_insect_locations(point_df, crop_raster_folder, id_column, cro
             continue
 
         # Construct the raster file path for the specific year
-        raster_file = f'{crop_raster_folder}/{year}_30m_cdls/{year}_30m_cdls.tif'
+        raster_file = crop_raster_config[year]
         
         # Open the raster file and extract crop values at insect locations
         with rasterio.open(raster_file) as src:
@@ -356,78 +355,76 @@ def bioclim_insect_intersection(climate_data_path, insect_crop_data, id_column):
     return insect_crop_data
 
 
-# Function to plot the data
-def plot_data(gdf, save_path, insect_name, markersize_col=None, date_column='day', show_plots=True):
+    
+
+# Function to plot the data based on provided parameters
+def plot_data(gdf, plot_info, save_path, show_plots=True):
     """
-    Plots spatial and temporal data of insect observations.
+    Plots data (spatial, temporal, or histogram) based on the given parameters.
 
     Args:
-        gdf (GeoDataFrame): The GeoDataFrame containing the data to be plotted.
-        save_path (str or Path): The directory path where the plots will be saved.
-        insect_name (str): The name of the insect being observed, used in the plot filenames.
-        markersize_col (str, optional): The column name to be used for determining the size of the markers in the geographic plot. Default is None.
-        date_column (str, optional): The name of the date column. Default is 'day'.
-        show_plots (bool, optional): Whether to display the plots. Default is True.
+        gdf (GeoDataFrame or DataFrame): The data to be plotted.
+        plot_info (dict): A dictionary containing plot details:
+            - 'plot_type' (str): The type of plot to create ('map', 'timeseries', or 'hist').
+            - 'title' (str): The title of the plot.
+            - 'xlabel' (str, optional): The label for the x-axis.
+            - 'ylabel' (str, optional): The label for the y-axis.
+            - 'column' (str, optional): The column from `gdf` to use for plotting.
+            - 'rotation' (int, optional): The rotation angle for the x-axis ticks (useful for time-series plots).
+        save_path (str or Path): The path where the plot image will be saved.
+        show_plots (bool, optional): Whether to display the plot. Defaults to True.
 
     Returns:
         None
     """
     
-    # Plot the points inside a US map, with size of point corresponding to the number of bugs observed
-    if isinstance(markersize_col, str):
-        gdf.plot(marker='o', column='label', markersize=gdf[markersize_col], cmap='viridis', legend=True)  
-    else:
-        gdf.plot(marker='o', column='label', cmap='viridis', legend=True)
-        
-    plt.title("Number of Bugs Observed at Locations")
-    plt.xlabel("Longitude")
-    plt.ylabel("Latitude")
-    plt.tight_layout()  # Ensures layout is nice
+    # Retrieve plot information from the plot_info dictionary
+    plot_type = plot_info.get('plot_type')  # The type of plot ('map', 'timeseries', or 'hist')
+    title = plot_info.get('title')          # The title of the plot
+    xlabel = plot_info.get('xlabel', None)  # X-axis label (optional)
+    ylabel = plot_info.get('ylabel', None)  # Y-axis label (optional)
+    column = plot_info.get('column', None)  # Column in DataFrame to be used for plotting (optional)
+    rotation = plot_info.get('rotation', None)  # Rotation for x-axis ticks (optional)
+
+    # Handle different plot types
+    if plot_type == 'map':
+        # Plot geographic points (such as locations on a map) using the specified column for color coding
+        gdf.plot(marker='o', column=column, cmap='viridis', legend=True)
     
+    elif plot_type == 'timeseries':
+        # Plot a time series showing how a value (such as insect count) changes over time
+        plt.figure(figsize=(15, 4))
+        # Group the data by the date column and plot the number of occurrences over time
+        gdf.groupby(column).size().sort_index().plot(kind='line', marker='o')
+        
+    elif plot_type == 'hist':
+        # Plot a histogram for a specific column to show the distribution of data (e.g., crop distribution)
+        plt.figure(figsize=(20, 5))
+        gdf[column].hist(grid=False)
+    
+    elif plot_type == 'hist_all':
+        # Plot histograms for all columns (especially bioclim data)
+        gdf.hist(figsize=(30, 20), grid=False)
+
+    # Common plot settings
+    plt.title(title)  # Set the plot title
+    if xlabel:
+        plt.xlabel(xlabel)  # Set x-axis label if provided
+    if ylabel:
+        plt.ylabel(ylabel)  # Set y-axis label if provided
+    
+    # Handle x-axis tick rotation if specified (for time-series or other plots where it's useful)
+    plt.xticks() if rotation is None else plt.xticks(rotation=rotation)
+    
+    # Adjust layout to ensure no overlap between plot elements
+    plt.tight_layout()
+
+    # Save the plot to the specified save_path if it's a valid path
     if isinstance(save_path, (str, pathlib.PosixPath)):  
-        plt.savefig(os.path.join(save_path, insect_name + '_map.png'))
-    if show_plots:
-        plt.show()
-    else:
-        plt.close()
-
-    # Plotting a time series plot, which shows how many bugs have been observed over different years
-    plt.figure(figsize=(15, 4))
-    gdf.groupby(date_column).size().sort_index().plot(kind='line', marker='o')
-    plt.title('Time Series of Observations')
-    plt.xlabel('Date')
-    plt.ylabel('Number of Observations')
-    plt.xticks(rotation=45)
-    plt.tight_layout()  # Ensures layout is nice
+        plt.savefig(save_path)
     
-    if isinstance(save_path, (str, pathlib.PosixPath)):
-        plt.savefig(os.path.join(save_path, insect_name + '_timeline.png'))
+    # Show or close the plot based on the `show_plots` flag
     if show_plots:
-        plt.show()
+        plt.show()  # Display the plot
     else:
-        plt.close()
-        
-    print(gdf.head(2))
-
-    # Plot a histogram showing the crop distribution in the data
-    gdf['crop'].hist(figsize=(20, 5), grid=False)
-    plt.xticks(rotation=90)
-    plt.tight_layout()  # Ensures layout is nice
-    
-    if isinstance(save_path, (str, pathlib.PosixPath)):
-        plt.savefig(os.path.join(save_path, insect_name + '_cropDistribution.png'))
-    if show_plots:
-        plt.show()
-    else:
-        plt.close()
-
-    # Plot histograms for all columns (especially bioclim data)
-    gdf.hist(figsize=(30, 20), grid=False)
-    plt.tight_layout()  # Ensures layout is nice
-    
-    if isinstance(save_path, (str, pathlib.PosixPath)):
-        plt.savefig(os.path.join(save_path, insect_name + '_BioClimDistribution.png'))
-    if show_plots:
-        plt.show()
-    else:
-        plt.close()
+        plt.close()  # Close the plot if not showing (for batch processing)

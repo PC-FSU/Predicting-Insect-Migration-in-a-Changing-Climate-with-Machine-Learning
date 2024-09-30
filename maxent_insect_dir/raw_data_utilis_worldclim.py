@@ -11,7 +11,7 @@ import xarray as xr
 
 
 
-def worldclimbioclim_yearlyavg_insect_intersection(climate_data_path, insect_crop_data):
+def worldclim_bioclim_yearly_avg_insect_intersection(climate_data_path, insect_crop_data):
     """
     Extracts bioclimatic values from a set of raster file at the locations 
     specified in the insect_crop_data and adds them as columns in the GeoDataFrame.
@@ -90,7 +90,7 @@ def get_nearest_time_range(year, data):
     return data[nearest_range], nearest_range, boundary
 
 
-def worldclimbioclim_monthlyyavg_insect_intersection(climate_data_path, insect_crop_data, id_column):
+def worldclim_bioclim_monthly_avg_insect_intersection(climate_data_path, insect_crop_data, id_column):
     """
     Intersects monthly climate data with insect point data on a per-year basis. 
     For each insect point, it retrieves the average monthly values for temperature maximum (tmax), 
