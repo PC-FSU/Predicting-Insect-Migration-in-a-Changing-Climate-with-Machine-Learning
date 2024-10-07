@@ -10,6 +10,8 @@ import numpy as np
 import xarray as xr
 
 
+from MaxEnt_insect_dir.maxent_insect_dir.config import *
+from MaxEnt_insect_dir.maxent_insect_dir.utils_common import *
 
 def worldclim_bioclim_yearly_avg_insect_intersection(climate_data_path, insect_crop_data):
     """
@@ -54,40 +56,6 @@ def worldclim_bioclim_yearly_avg_insect_intersection(climate_data_path, insect_c
     insect_crop_data = insect_crop_data.drop(insect_crop_data[(insect_crop_data['WORLDCLIM_YEARLY_AVG_BIO2'] < -1e6) | (insect_crop_data['WORLDCLIM_YEARLY_AVG_BIO2'] > 1e6)].index)
 
     return insect_crop_data
-
-
-def get_nearest_time_range(year, data):
-    """
-    Given a year, this function finds the nearest time range in the available climate data.
-    
-    Args:
-        year (int): The year to search for.
-        data (dict): Dictionary where keys represent year ranges, and values are paths to climate data.
-        
-    Returns:
-        tuple: The dictionary of paths for the nearest year range, the range as a string, and the closest boundary year.
-    """
-    nearest_range = None
-    smallest_diff = float('inf')
-    
-    for range_key in data.keys():
-        # Extract the start and end years from the range key
-        start_year, end_year = map(int, range_key.split('-'))
-        
-        # If the year is within the range, return it immediately
-        if start_year <= year <= end_year:
-            return data[range_key], range_key, year
-        
-        # Calculate the smallest difference between the year and the range boundaries
-        diff = min(abs(year - start_year), abs(year - end_year))
-        if diff < smallest_diff:
-            smallest_diff = diff
-            nearest_range = range_key
-            
-            # Track the closest boundary year (either start or end of the range)
-            boundary = start_year if abs(year - start_year) <= abs(year - end_year) else end_year
-            
-    return data[nearest_range], nearest_range, boundary
 
 
 def worldclim_bioclim_monthly_avg_insect_intersection(climate_data_path, insect_crop_data, id_column):

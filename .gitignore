@@ -1,5 +1,10 @@
 # Data
 /data/
+/reports/figures
+/reports/image
+/reports/Boyce_index.md 
+/reports/boyce_index.r
+/reports/track_results.md
 
 # Mac OS-specific storage files
 .DS_Store
@@ -89,6 +94,9 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# Folder
+notebooks/
 
 # IPython
 profile_default/

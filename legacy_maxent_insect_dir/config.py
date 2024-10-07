@@ -24,7 +24,10 @@ CROP_DATA = pathlib.Path("/data/Maxent/data/raw/crop_data")
 BIAS_RASTERS_PATH =  pathlib.Path("/data/Maxent/data/raw/bias_file")
 
 # Path where backgrounds point will be saved
-BACKGROUND_POINTS_PATH  = pathlib.Path("/data/Maxent/data/interim/backgrounds")
+PATH_TO_SAVE_BACKGROUND_POINTS  = pathlib.Path("/data/Maxent/data/interim/backgrounds")
+
+# Path where figure to visualize background point will be saved
+PATH_TO_SAVE_BACKGROUND_FIGS = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/reports/figures/Background")
 
 
 #---------------------------------------- To config insects -----------------------------------------
