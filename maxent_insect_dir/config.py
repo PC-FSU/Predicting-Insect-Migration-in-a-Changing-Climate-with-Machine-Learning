@@ -66,39 +66,38 @@ Crop_mapping_config = pathlib.Path("/data/Maxent/data/raw/crop_data/cdl_codes_na
 
 #---------------------------------------- To config climate -----------------------------------------
 
-
 # Path to climate data for worldclim
 config_worldclim = {
     'yearly_avg': {
-        '1970_2020': pathlib.Path("/data/Maxent/data/raw/wordclim_average_1970_2000/wc2.1_10m_bio")
+        '1970_2020': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_average_1970_2000/wc2.1_10m_bio")
     },
     'monthly_avg': {
         '1990-1999': {
-            'tmax': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/1990-1999/wc2.1_cruts4.06_10m_tmax_1990-1999"),
-            'tmin': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/1990-1999/wc2.1_cruts4.06_10m_tmin_1990-1999"),
-            'prec': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/1990-1999/wc2.1_cruts4.06_10m_prec_1990-1999")
+            'tmax': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/1990-1999/wc2.1_cruts4.06_10m_tmax_1990-1999"),
+            'tmin': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/1990-1999/wc2.1_cruts4.06_10m_tmin_1990-1999"),
+            'prec': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/1990-1999/wc2.1_cruts4.06_10m_prec_1990-1999")
         },
         '2000-2009': {
-            'tmax': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/2000-2009/wc2.1_cruts4.06_10m_tmax_2000-2009"),
-            'tmin': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/2000-2009/wc2.1_cruts4.06_10m_tmin_2000-2009"),
-            'prec': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/2000-2009/wc2.1_cruts4.06_10m_prec_2000-2009")
+            'tmax': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/2000-2009/wc2.1_cruts4.06_10m_tmax_2000-2009"),
+            'tmin': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/2000-2009/wc2.1_cruts4.06_10m_tmin_2000-2009"),
+            'prec': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/2000-2009/wc2.1_cruts4.06_10m_prec_2000-2009")
         },
         '2010-2019': {
-            'tmax': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/2010-2019/wc2.1_cruts4.06_10m_tmax_2010-2019"),
-            'tmin': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/2010-2019/wc2.1_cruts4.06_10m_tmin_2010-2019"),
-            'prec': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/2010-2019/wc2.1_cruts4.06_10m_prec_2010-2019")
+            'tmax': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/2010-2019/wc2.1_cruts4.06_10m_tmax_2010-2019"),
+            'tmin': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/2010-2019/wc2.1_cruts4.06_10m_tmin_2010-2019"),
+            'prec': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/2010-2019/wc2.1_cruts4.06_10m_prec_2010-2019")
         },
         '2020-2021': {
-            'tmax': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/2020-2021/wc2.1_cruts4.06_10m_tmax_2020-2021"),
-            'tmin': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/2020-2021/wc2.1_cruts4.06_10m_tmin_2020-2021"),
-            'prec': pathlib.Path("/data/Maxent/data/raw/worldclim_monthly/2020-2021/wc2.1_cruts4.06_10m_prec_2020-2021")
+            'tmax': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/2020-2021/wc2.1_cruts4.06_10m_tmax_2020-2021"),
+            'tmin': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/2020-2021/wc2.1_cruts4.06_10m_tmin_2020-2021"),
+            'prec': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_monthly/2020-2021/wc2.1_cruts4.06_10m_prec_2020-2021")
         }
     }
 }
 
 
 #Path to BioClim Data downloaded from CDS
-BIOCLIM_DATA_CDS = pathlib.Path("/data/Maxent/data/raw/BioCLim/data")
+BIOCLIM_DATA_CDS = pathlib.Path("/data/Maxent/data/raw/Bioclim_CDS/data")
 
 
 #---------------------------------------- raw data config -----------------------------------------
