@@ -6,6 +6,7 @@ import rasterio
 import warnings
 import numpy as np
 import xarray as xr
+import re
 from typing import Dict, List, Union
 
 from maxent_insect_dir.config import *
@@ -208,11 +209,12 @@ def validate_crs_consistency(point_gdf: gpd.GeoDataFrame, raster_files: List[str
                     UserWarning
                 )
                 
+                
 def sample_raster_values_at_points(
     point_gdf: gpd.GeoDataFrame,
     raster_file: str,
     id_column: str,
-    value_column_name: str = 'raster_value'
+    var_name: str = 'raster_value'
 ) -> pd.DataFrame:
     """
     Samples raster values at the locations specified in point_gdf.
@@ -243,7 +245,7 @@ def sample_raster_values_at_points(
 
         result_df = pd.DataFrame({
             id_column: point_gdf[id_column],
-            value_column_name: values
+            var_name: values
         })
 
         return result_df
@@ -306,3 +308,80 @@ def sample_netcdf_values_at_points(
     )[variable_name].values.item()
 
     return bioclim_value
+
+
+def remove_outliers(
+    df: gpd.GeoDataFrame,
+    column: str,
+    lower_bound: float,
+    upper_bound: float
+) -> gpd.GeoDataFrame:
+    """
+    Removes rows where the values in the specified column are outside the given bounds.
+    """
+    return df[(df[column] > lower_bound) & (df[column] < upper_bound)]
+
+
+
+def load_raster_files(climate_data_path: str):
+    """
+    Loads and returns a sorted list of yearly raster file paths from the given directory.
+    """
+    try:
+        files = sorted(os.listdir(climate_data_path), key = lambda x: int(re.search(r'\d+', x).group()))
+    except:
+        files = os.listdir(climate_data_path)
+    raster_paths = [os.path.join(climate_data_path, f) for f in files]
+    return raster_paths
+
+
+
+def bioclim_avg_insect_intersection(
+    raster_path: str,
+    gfd: gpd.GeoDataFrame,
+    id_column: str,
+    label_prefix: str
+) -> gpd.GeoDataFrame:
+    """
+    Extracts values from yearly raster files at the locations in the gfd frame.
+
+    Parameters:
+    -----------
+    raster_path : str
+        Path to the directory containing raster files.
+    gfd : GeoDataFrame
+        GeoDataFrame.
+    id_column : str
+        Column name in gfd that uniquely identifies each point.
+
+    Returns:
+    --------
+    GeoDataFrame
+        Updated GeoDataFrame with additional columns.
+    """
+    # Load yearly raster files
+    raster_files = load_raster_files(raster_path)
+
+    for idx, path in enumerate(raster_files):
+        var_name = label_prefix + path.split('/')[-1].split('.')[0]
+
+        # Sample raster values at insect locations
+        sampled_values_df = sample_raster_values_at_points(
+            gfd,
+            path,
+            id_column,
+            var_name
+        )
+
+        # Merge the sampled values back into the insect_crop_data
+        gfd = gfd.merge(
+            sampled_values_df,
+            on=id_column,
+            how='left'
+        )
+        
+    return gfd
+
+
+# alias for LUH2
+LUH2_intersection = bioclim_avg_insect_intersection

@@ -18,17 +18,6 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 
 
-def load_yearly_raster_files(climate_data_path: str) -> List[str]:
-    """
-    Loads and returns a sorted list of yearly raster file paths from the given directory.
-    """
-    files = sorted(
-        [f for f in os.listdir(climate_data_path) if f.endswith('.tif')],
-        key=lambda x: int(x.split('_')[-1].split('.')[0])
-    )
-    raster_paths = [os.path.join(climate_data_path, f) for f in files]
-    return raster_paths
-
 
 def load_monthly_raster_files(
     year: int,
@@ -46,18 +35,6 @@ def load_monthly_raster_files(
             ) for month in range(1, 13)
         }
     return final_dict_path
-
-
-def remove_outliers(
-    df: gpd.GeoDataFrame,
-    column: str,
-    lower_bound: float,
-    upper_bound: float
-) -> gpd.GeoDataFrame:
-    """
-    Removes rows where the values in the specified column are outside the given bounds.
-    """
-    return df[(df[column] > lower_bound) & (df[column] < upper_bound)]
 
 
 
@@ -96,49 +73,6 @@ def get_nearest_time_range(year: int, data: Dict[str, Dict[str, str]]) -> tuple[
 
     return data[nearest_range], nearest_range, boundary
 
-
-
-def process_yearly_raster_file(
-    insect_crop_data: gpd.GeoDataFrame,
-    raster_path: str,
-    id_column: str,
-    var_name: str
-) -> gpd.GeoDataFrame:
-    """
-    Samples raster values from a yearly raster file and merges them into the GeoDataFrame.
-
-    Parameters:
-    -----------
-    insect_crop_data : GeoDataFrame
-        GeoDataFrame containing insect data.
-    raster_path : str
-        Path to the raster file.
-    id_column : str
-        Column name in insect_crop_data that uniquely identifies each point.
-    var_name : str
-        Name of the variable to be added to the GeoDataFrame.
-
-    Returns:
-    --------
-    GeoDataFrame
-        Updated GeoDataFrame with the new variable column added.
-    """
-    # Sample raster values at insect locations
-    sampled_values_df = sample_raster_values_at_points(
-        insect_crop_data,
-        raster_path,
-        id_column,
-        var_name
-    )
-
-    # Merge the sampled values back into the insect_crop_data
-    insect_crop_data = insect_crop_data.merge(
-        sampled_values_df,
-        on=id_column,
-        how='left'
-    )
-
-    return insect_crop_data
 
 
 def process_year_group(
@@ -225,55 +159,6 @@ def process_year_group(
         results_df.drop(columns=month_columns, inplace=True)
 
     return results_df
-
-
-
-
-def worldclim_bioclim_yearly_avg_insect_intersection(
-    climate_data_path: str,
-    insect_crop_data: gpd.GeoDataFrame,
-    id_column: str
-) -> gpd.GeoDataFrame:
-    """
-    Extracts bioclimatic values from yearly raster files at the insect locations.
-
-    Parameters:
-    -----------
-    climate_data_path : str
-        Path to the directory containing raster files with bioclimatic data.
-    insect_crop_data : GeoDataFrame
-        GeoDataFrame containing insect data.
-    id_column : str
-        Column name in insect_crop_data that uniquely identifies each point.
-
-    Returns:
-    --------
-    GeoDataFrame
-        Updated GeoDataFrame with additional columns for each bioclimatic variable.
-    """
-    # Load yearly raster files
-    raster_files = load_yearly_raster_files(climate_data_path)
-
-    for idx, raster_path in enumerate(raster_files):
-        var_name = f'WORLDCLIM_YEARLY_AVG_BIO{idx + 1}'
-
-        # Process the raster file
-        insect_crop_data = process_yearly_raster_file(
-            insect_crop_data,
-            raster_path,
-            id_column,
-            var_name
-        )
-
-    # Remove outliers
-    insect_crop_data = remove_outliers(
-        insect_crop_data,
-        column='WORLDCLIM_YEARLY_AVG_BIO2',
-        lower_bound=-1e6,
-        upper_bound=1e6
-    )
-
-    return insect_crop_data
 
 
 

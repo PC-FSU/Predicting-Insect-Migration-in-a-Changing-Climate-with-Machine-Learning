@@ -10,6 +10,13 @@ insects=(
     ["Root_Weevil"]="GBIF"
 )
 
+# Define the list of climate data sources and their types
+declare -A climate_sources
+climate_sources=(
+    ["Worldclim"]="WorldClim"
+    ["Cds"]="CDS"
+)
+
 # Iterate over each insect and download source
 for insect in "${!insects[@]}"; do
     DOWNLOAD_SOURCE="${insects[$insect]}"
@@ -18,9 +25,18 @@ for insect in "${!insects[@]}"; do
     echo "Processing Insect: $INSECT_NAME"
     echo "Download Source: $DOWNLOAD_SOURCE"
 
-    # Add your command to run the Python script or code here, e.g.
-    python pipeline_clean_merge_visualize_raw_data_worldclim.py --insect_name "$INSECT_NAME" --download_source "$DOWNLOAD_SOURCE"
+    # Iterate over each climate data source
+    for climate in "${!climate_sources[@]}"; do
+        CLIMATE_SOURCE="${climate_sources[$climate]}"
+        
+        echo "Using Climate Data Source: $CLIMATE_SOURCE"
 
-    echo "Finished processing $INSECT_NAME with $DOWNLOAD_SOURCE"
-    echo ""
+        # Add your command to run the Python script or code here, e.g.
+        #python pipeline_prepare_presence_points.py --insect_name "$INSECT_NAME" --download_source "$DOWNLOAD_SOURCE" --climate_source "$CLIMATE_SOURCE"
+
+        python pipeline_prepare_background_points.py --insect_name "$INSECT_NAME" --download_source "$DOWNLOAD_SOURCE" --climate_source "$CLIMATE_SOURCE" --use_Bias_raster True
+
+        echo "Finished processing $INSECT_NAME with $DOWNLOAD_SOURCE using $CLIMATE_SOURCE"
+        echo ""
+    done
 done

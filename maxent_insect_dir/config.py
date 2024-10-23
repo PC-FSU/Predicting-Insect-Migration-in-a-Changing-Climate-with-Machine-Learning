@@ -68,8 +68,9 @@ Crop_mapping_config = pathlib.Path("/data/Maxent/data/raw/crop_data/cdl_codes_na
 
 # Path to climate data for worldclim
 config_worldclim = {
-    'yearly_avg': {
-        '1970_2020': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_average_1970_2000/wc2.1_10m_bio")
+    'avgs': {
+        '1970_2000': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_average_1970_2000/wc2.1_10m_bio"),
+        '1990_2021': pathlib.Path("/data/Maxent/data/raw/Bioclim_worldclim_average_1990_2021")
     },
     'monthly_avg': {
         '1990-1999': {
@@ -97,8 +98,21 @@ config_worldclim = {
 
 
 #Path to BioClim Data downloaded from CDS
-BIOCLIM_DATA_CDS = pathlib.Path("/data/Maxent/data/raw/Bioclim_CDS/data")
+config_CDS = {
+    'avgs': {
+        '1970_2000': pathlib.Path("/data/Maxent/data/raw/Bioclim_CDS_average_1970_2000"),
+        '1990_2021': pathlib.Path("/data/Maxent/data/raw/Bioclim_CDS_average_1990_2021")
+    },
+    'yearly' : pathlib.Path("/data/Maxent/data/raw/Bioclim_CDS/data")
+}
 
+
+config_LUH2 = {
+    'avgs': {
+        '1970_2000': pathlib.Path("/data/Maxent/data/raw/LUH2_average_1970_2000"),
+        '1990_2021': pathlib.Path("/data/Maxent/data/raw/LUH2_average_1990_2021")
+    }
+}
 
 #---------------------------------------- raw data config -----------------------------------------
 
@@ -109,10 +123,11 @@ config_raw = {
         'EDD': Data_EDD,
         'GBIF': Data_GBIF
     },
-    'climate_data_CDS': BIOCLIM_DATA_CDS,
+    'climate_data_CDS': config_CDS,
     'climate_data_worldclim' : config_worldclim,
     'crop_data': All_crop_data,
-    'crop_mapping_config': Crop_mapping_config
+    'crop_mapping_config': Crop_mapping_config,
+    'LUH2': config_LUH2
 }
 
 
@@ -141,6 +156,13 @@ config_interim_CDS = {
         'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
         'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
         'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Root_Weevil_GBIF_intermediatory.gpkg"))
+    },
+    'background': {
+        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
+        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Corn_Earworm_EDD_intermediatory.gpkg")),
+        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
+        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
+        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Root_Weevil_GBIF_intermediatory.gpkg"))
     }
 }
 
@@ -151,6 +173,13 @@ config_interim_WorldClim = {
         'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
         'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
         'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Root_Weevil_GBIF_intermediatory.gpkg"))
+    },
+    'background': {
+        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
+        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Corn_Earworm_EDD_intermediatory.gpkg")),
+        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
+        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
+        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Root_Weevil_GBIF_intermediatory.gpkg"))
     }
 }
 

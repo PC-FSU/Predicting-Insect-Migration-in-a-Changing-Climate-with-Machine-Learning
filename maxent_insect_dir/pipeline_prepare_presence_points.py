@@ -58,13 +58,22 @@ if __name__ == "__main__":
     # Clean and prepare the data
     print(f'Step 1: Cleaning raw insect data...\n\n')
     presence = clean_insect_data(DOWNLOAD_SOURCE, presence)
+    
+    print('Step 2: Getting the crop intersection...\n\n')
+    # Get the crop-insect intersection
+    presence_crop = crops_insect_intersection_presence(
+        point_df=presence,
+        crop_raster_config=config_raw['crop_data'],
+        id_column='objectid',
+        crop_mapping_dict=crop_mapping_dict
+    )
 
     # Get crop and bioclim intersection
-    print(f'Step 2: Getting intersection between insect data, crop data, and BioClim data...\n\n')
-    presence_crop_bioclim = get_crop_bioclim_intersection_presence(presence, crop_mapping_dict, CLIMATE_SOURCE)
+    print(f'Step 3: Getting intersection between insect data, crop data, and BioClim data...\n\n')
+    presence_crop_bioclim = get_crop_bioclim_intersection_presence(presence_crop, CLIMATE_SOURCE)
 
     # Plot and save the data
-    print(f'Step 3: Plotting data distributions and saving the results...\n\n')
+    print(f'Step 4: Plotting data distributions and saving the results...\n\n')
     if DOWNLOAD_SOURCE == 'GBIF':
         plot_and_save_data(presence_crop_bioclim, PATH_SAVE_FIG, PATH_SAVE_DATA, INSECT_NAME, date_column='day')
     else:
