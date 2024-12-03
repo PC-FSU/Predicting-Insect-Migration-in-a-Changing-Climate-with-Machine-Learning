@@ -17,7 +17,7 @@ from elapid.types import CRSType, to_iterable
 
 
 
-def xy_to_geodataframe(x: Union[float, list, np.ndarray], y: Union[float, list, np.ndarray], crs: CRSType = "epsg:4326") -> gpd.GeoDataFrame:
+def xy_to_geodataframe(x: Union[float, list, np.ndarray], y: Union[float, list, np.ndarray], crs: CRSType = "epsg:5070") -> gpd.GeoDataFrame:
     """Converts x/y data into a geopandas GeoDataFrame.
 
     Args:
@@ -38,7 +38,7 @@ def xy_to_geodataframe(x: Union[float, list, np.ndarray], y: Union[float, list, 
     return gdf
 
 
-def draw_points(raster_path: str, count: int, nodata: float = None, ignore_mask: bool = False) -> gpd.GeoDataFrame:
+def draw_points_uniformly(raster_path: str, count: int, nodata: float = None, ignore_mask: bool = False) -> gpd.GeoDataFrame:
     """Create a random geographic sample of points based on a raster's extent.
 
     Selects from unmasked locations if the raster's nodata value is set.
@@ -55,11 +55,11 @@ def draw_points(raster_path: str, count: int, nodata: float = None, ignore_mask:
     with rio.open(raster_path) as src:
         print(f'src.nodata : {src.nodata}')
         
-        # Check if CRS is EPSG:4326, if not, set up conversion
-        crs_is_4326 = src.crs.to_epsg() == 4326
+        # Check if CRS is EPSG:5070, if not, set up conversion
+        crs_is_5070 = src.crs.to_epsg() == 5070
         
-        if not crs_is_4326:
-            print(f"Reprojecting raster from {src.crs} to EPSG:4326...")
+        if not crs_is_5070:
+            print(f"Reprojecting raster from {src.crs} to EPSG:5070...")
 
         if src.nodata is None or ignore_mask:
             if nodata is None:
@@ -73,10 +73,10 @@ def draw_points(raster_path: str, count: int, nodata: float = None, ignore_mask:
                 xy = np.zeros((count, 2))
                 for i, sample in enumerate(samples):
                     x_coord, y_coord = src.xy(rows[sample], cols[sample])
-                    if not crs_is_4326:
-                        # Reproject coordinates to EPSG:4326
+                    if not crs_is_5070:
+                        # Reproject coordinates to EPSG:5070
                         point_geom = transform_geom(
-                            src.crs, 'EPSG:4326',
+                            src.crs, 'EPSG:5070',
                             {'type': 'Point', 'coordinates': [x_coord, y_coord]}
                         )['coordinates']
                         x_coord, y_coord = point_geom
@@ -93,10 +93,10 @@ def draw_points(raster_path: str, count: int, nodata: float = None, ignore_mask:
             xy = np.zeros((count, 2))
             for i, sample in enumerate(samples):
                 x_coord, y_coord = src.xy(rows[sample], cols[sample])
-                if not crs_is_4326:
-                    # Re-project coordinates to EPSG:4326
+                if not crs_is_5070:
+                    # Re-project coordinates to EPSG:5070
                     point_geom = transform_geom(
-                        src.crs, 'EPSG:4326',
+                        src.crs, 'EPSG:5070',
                         {'type': 'Point', 'coordinates': [x_coord, y_coord]}
                     )['coordinates']
                     x_coord, y_coord = point_geom
@@ -104,7 +104,7 @@ def draw_points(raster_path: str, count: int, nodata: float = None, ignore_mask:
 
         points = xy_to_geodataframe(
             xy[:, 0], xy[:, 1],
-            crs='EPSG:4326' if not crs_is_4326 else src.crs
+            crs='EPSG:5070' if not crs_is_5070 else src.crs
         )
         return points
 
@@ -130,7 +130,7 @@ def draw_background(bias_raster: str = None, count: int = 10000) -> gpd.GeoDataF
         # Ensure that the result is a GeoDataFrame
         if isinstance(background_points, gpd.GeoSeries):
             background_points = gpd.GeoDataFrame({'geometry': background_points}, crs=background_points.crs)
-            
+    background_points['label'] = 0
     return background_points
 
 
@@ -199,3 +199,5 @@ def get_crop_bioclim_intersection_background(gdf, id_column, climate_source):
         )
         
         return data_
+    
+    

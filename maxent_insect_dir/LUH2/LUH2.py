@@ -37,6 +37,21 @@ def get_LUH2_avg():
     return LUH2_avg_1970_2000, LUH2_avg_1990_2021
 
 
+
+def get_LUH2_yearly(year):
+    # Load yearly raster files
+    data_850_2015 =  xr.open_dataset(pathlib.Path("/data/Maxent/data/raw/LUH2/states_850_2015.nc"), decode_times=False )
+    data_2015_2100 = xr.open_dataset(pathlib.Path("/data/Maxent/data/raw/LUH2/multiple-states_input4MIPs_landState_ScenarioMIP_UofMD-MESSAGE-ssp245-2-1-f_gn_2015-2100.nc"), decode_times=False)
+    
+    print(f'Calculating LUH2 for year:{year}....\n')
+    if year<=2015:
+        data = data_850_2015.isel(time=year-850)
+    else:
+        data = data_2015_2100.isel(time=year-2015)
+
+    return data
+
+
 def write_LUH2_to_raster(dataset, save_path):
     """
     Helper function to loop over all variables in an xarray dataset and call write_raster for each.

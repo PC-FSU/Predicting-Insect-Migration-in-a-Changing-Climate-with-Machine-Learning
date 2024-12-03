@@ -60,7 +60,7 @@ def crops_insect_intersection_presence(
             point_gdf=group,
             raster_file=raster_file,
             id_column=id_column,
-            value_column_name='crop_code'
+            var_name='crop_code'
         )
 
         # Append the results

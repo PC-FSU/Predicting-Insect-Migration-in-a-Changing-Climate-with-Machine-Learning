@@ -81,6 +81,27 @@ def drop_points_outside_us(gdf):
     return gdf_filtered
 
 
+def filter_outlier(gdf):
+    """
+    Filters out rows in a GeoDataFrame where any numeric column has an absolute value greater than 1e25.
+    
+    Parameters:
+    - gdf: GeoDataFrame or DataFrame to be filtered.
+    
+    Returns:
+    - Filtered GeoDataFrame or DataFrame.
+    """
+    # Select only the numeric columns
+    numeric_cols = gdf.select_dtypes(include=[np.number]).columns
+    
+    # Create a boolean mask where True indicates rows to keep
+    mask = (gdf[numeric_cols].abs() <= 1e10).all(axis=1)
+    
+    # Apply the mask to filter the GeoDataFrame
+    filtered_gdf = gdf[mask]
+    
+    return filtered_gdf
+
 
 # Function to plot the data based on provided parameters
 def plot_data(gdf, plot_info, save_path, show_plots=True):

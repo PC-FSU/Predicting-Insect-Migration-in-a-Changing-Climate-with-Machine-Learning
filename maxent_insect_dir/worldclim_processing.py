@@ -139,7 +139,7 @@ def process_year_group(
                     point_gdf=month_group,
                     raster_file=raster_file,
                     id_column=id_column,
-                    value_column_name=f'{var}_{month}'
+                    var_name=f'{var}_{month}'
                 )
                 # Merge the sampled values
                 results_df = results_df.merge(

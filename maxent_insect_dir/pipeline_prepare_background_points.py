@@ -24,8 +24,6 @@ DOWNLOAD_SOURCE = args.download_source
 CLIMATE_SOURCE = args.climate_source
 USE_BIAS_RASTER = args.use_Bias_raster
 
-# Define paths and insect data based on the command-line arguments
-INSECT_DATA = config_raw['insect'][DOWNLOAD_SOURCE][INSECT_NAME]
 
 # Dynamically set interim and save paths based on the climate data source
 INTERIM_PATH = os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, CLIMATE_SOURCE)
@@ -61,7 +59,7 @@ print(f'We are looking at insect: {INSECT_NAME}, downloaded from the source: {DO
 
 if __name__ == "__main__":
     
-    print(f'Step 1: Generate the backgropund data...\n\n')
+    print(f'Step 1: Generate the background data...\n\n')
     count = 10000
     if USE_BIAS_RASTER:
         bias_raster = config_bias_rasters[INSECT_NAME]

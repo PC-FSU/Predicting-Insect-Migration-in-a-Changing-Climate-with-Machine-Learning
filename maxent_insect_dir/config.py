@@ -29,6 +29,12 @@ PATH_TO_SAVE_BACKGROUND_POINTS  = pathlib.Path("/data/Maxent/data/interim/backgr
 # Path where figure to visualize background point will be saved
 PATH_TO_SAVE_BACKGROUND_FIGS = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/reports/figures/Background")
 
+# Path where the test-dataset will be saved. These dataset will contain the point sample in continental US, with crop data, LUH2 and Bioclim varaible.
+PATH_TO_SAVE_TEST_DATA = pathlib.Path("/data/Maxent/data/processed/Test")
+
+# Path where the models is saved
+PATH_TO_SAVE_RESULTS = pathlib.Path("/data/Maxent/data/results")
+
 
 #---------------------------------------- To config insects -----------------------------------------
 
@@ -111,7 +117,8 @@ config_LUH2 = {
     'avgs': {
         '1970_2000': pathlib.Path("/data/Maxent/data/raw/LUH2_average_1970_2000"),
         '1990_2021': pathlib.Path("/data/Maxent/data/raw/LUH2_average_1990_2021")
-    }
+    },
+    'yearly' : pathlib.Path("/data/Maxent/data/raw/LUH2_yearly")
 }
 
 #---------------------------------------- raw data config -----------------------------------------
@@ -150,7 +157,7 @@ config_bias_rasters = {
 # config dictionary for interim data. the path is same as where the interim data were saved.
 
 config_interim_CDS = {
-    'insect' : {
+    'presence' : {
         'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
         'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Corn_Earworm_EDD_intermediatory.gpkg")),
         'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
@@ -158,16 +165,16 @@ config_interim_CDS = {
         'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Root_Weevil_GBIF_intermediatory.gpkg"))
     },
     'background': {
-        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
-        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Corn_Earworm_EDD_intermediatory.gpkg")),
-        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
-        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
-        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Root_Weevil_GBIF_intermediatory.gpkg"))
+        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
+        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Corn_Earworm_EDD_intermediatory.gpkg")),
+        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
+        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
+        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Root_Weevil_GBIF_intermediatory.gpkg"))
     }
 }
 
 config_interim_WorldClim = {
-    'insect' : {
+    'presence' : {
         'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
         'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Corn_Earworm_EDD_intermediatory.gpkg")),
         'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
@@ -175,12 +182,169 @@ config_interim_WorldClim = {
         'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Root_Weevil_GBIF_intermediatory.gpkg"))
     },
     'background': {
-        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
-        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Corn_Earworm_EDD_intermediatory.gpkg")),
-        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
-        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
-        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_FIGS, "CDS", "Root_Weevil_GBIF_intermediatory.gpkg"))
+        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
+        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Corn_Earworm_EDD_intermediatory.gpkg")),
+        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
+        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
+        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Root_Weevil_GBIF_intermediatory.gpkg"))
     }
 }
 
 
+LUH2_cols_1990_2021 =  [
+    'LUH2_1990_2021_AVG_secmb',
+    'LUH2_1990_2021_AVG_primf',
+    'LUH2_1990_2021_AVG_pastr',
+    'LUH2_1990_2021_AVG_c3per',
+    'LUH2_1990_2021_AVG_secdf',
+    'LUH2_1990_2021_AVG_c4ann',
+    'LUH2_1990_2021_AVG_urban',
+    'LUH2_1990_2021_AVG_secdn',
+    'LUH2_1990_2021_AVG_c4per',
+    'LUH2_1990_2021_AVG_primn',
+    'LUH2_1990_2021_AVG_range',
+    'LUH2_1990_2021_AVG_secma',
+    'LUH2_1990_2021_AVG_c3ann',
+    'LUH2_1990_2021_AVG_c3nfx'
+]
+
+LUH2_cols_1970_2000 = [
+    'LUH2_1970_2000_AVG_secmb',
+    'LUH2_1970_2000_AVG_primf',
+    'LUH2_1970_2000_AVG_pastr',
+    'LUH2_1970_2000_AVG_c3per',
+    'LUH2_1970_2000_AVG_secdf',
+    'LUH2_1970_2000_AVG_c4ann',
+    'LUH2_1970_2000_AVG_urban',
+    'LUH2_1970_2000_AVG_secdn',
+    'LUH2_1970_2000_AVG_c4per',
+    'LUH2_1970_2000_AVG_primn',
+    'LUH2_1970_2000_AVG_range',
+    'LUH2_1970_2000_AVG_secma',
+    'LUH2_1970_2000_AVG_c3ann',
+    'LUH2_1970_2000_AVG_c3nfx'
+]
+
+
+CDS_cols_1990_2021 = [
+    'CDS_1990_2021_AVG_Bio1',
+    'CDS_1990_2021_AVG_Bio2',
+    'CDS_1990_2021_AVG_Bio3',
+    'CDS_1990_2021_AVG_Bio4',
+    'CDS_1990_2021_AVG_Bio5',
+    'CDS_1990_2021_AVG_Bio6',
+    'CDS_1990_2021_AVG_Bio7',
+    'CDS_1990_2021_AVG_Bio8',
+    'CDS_1990_2021_AVG_Bio9',
+    'CDS_1990_2021_AVG_Bio10',
+    'CDS_1990_2021_AVG_Bio11',
+    'CDS_1990_2021_AVG_Bio12',
+    'CDS_1990_2021_AVG_Bio13',
+    'CDS_1990_2021_AVG_Bio14',
+    'CDS_1990_2021_AVG_Bio15',
+    'CDS_1990_2021_AVG_Bio16',
+    'CDS_1990_2021_AVG_Bio17',
+    'CDS_1990_2021_AVG_Bio18',
+    'CDS_1990_2021_AVG_Bio19'
+]
+
+
+CDS_cols_1970_2000 = [
+    'CDS_1970_2000_AVG_Bio1',
+    'CDS_1970_2000_AVG_Bio2',
+    'CDS_1970_2000_AVG_Bio3',
+    'CDS_1970_2000_AVG_Bio4',
+    'CDS_1970_2000_AVG_Bio5',
+    'CDS_1970_2000_AVG_Bio6',
+    'CDS_1970_2000_AVG_Bio7',
+    'CDS_1970_2000_AVG_Bio8',
+    'CDS_1970_2000_AVG_Bio9',
+    'CDS_1970_2000_AVG_Bio10',
+    'CDS_1970_2000_AVG_Bio11',
+    'CDS_1970_2000_AVG_Bio12',
+    'CDS_1970_2000_AVG_Bio13',
+    'CDS_1970_2000_AVG_Bio14',
+    'CDS_1970_2000_AVG_Bio15',
+    'CDS_1970_2000_AVG_Bio16',
+    'CDS_1970_2000_AVG_Bio17',
+    'CDS_1970_2000_AVG_Bio18',
+    'CDS_1970_2000_AVG_Bio19',
+]
+
+
+WorldClim_cols_1970_2000 = [
+    'WORLDCLIM_1970_2000_AVG_Bio1',
+    'WORLDCLIM_1970_2000_AVG_Bio2',
+    'WORLDCLIM_1970_2000_AVG_Bio3',
+    'WORLDCLIM_1970_2000_AVG_Bio4',
+    'WORLDCLIM_1970_2000_AVG_Bio5',
+    'WORLDCLIM_1970_2000_AVG_Bio6', 
+    'WORLDCLIM_1970_2000_AVG_Bio7',
+    'WORLDCLIM_1970_2000_AVG_Bio8',
+    'WORLDCLIM_1970_2000_AVG_Bio9',
+    'WORLDCLIM_1970_2000_AVG_Bio10', 
+    'WORLDCLIM_1970_2000_AVG_Bio11',
+    'WORLDCLIM_1970_2000_AVG_Bio12', 
+    'WORLDCLIM_1970_2000_AVG_Bio13',
+    'WORLDCLIM_1970_2000_AVG_Bio14',
+    'WORLDCLIM_1970_2000_AVG_Bio15',
+    'WORLDCLIM_1970_2000_AVG_Bio16', 
+    'WORLDCLIM_1970_2000_AVG_Bio17',
+    'WORLDCLIM_1970_2000_AVG_Bio18', 
+    'WORLDCLIM_1970_2000_AVG_Bio19'
+]
+
+WorldClim_cols_1990_2021 = [ 
+    'WORLDCLIM_1990_2021_AVG_Bio1',
+    'WORLDCLIM_1990_2021_AVG_Bio2',
+    'WORLDCLIM_1990_2021_AVG_Bio3',
+    'WORLDCLIM_1990_2021_AVG_Bio4',
+    'WORLDCLIM_1990_2021_AVG_Bio4a',
+    'WORLDCLIM_1990_2021_AVG_Bio5',
+    'WORLDCLIM_1990_2021_AVG_Bio6',
+    'WORLDCLIM_1990_2021_AVG_Bio7',
+    'WORLDCLIM_1990_2021_AVG_Bio8',
+    'WORLDCLIM_1990_2021_AVG_Bio9',
+    'WORLDCLIM_1990_2021_AVG_Bio10',
+    'WORLDCLIM_1990_2021_AVG_Bio11',
+    'WORLDCLIM_1990_2021_AVG_Bio12',
+    'WORLDCLIM_1990_2021_AVG_Bio13',
+    'WORLDCLIM_1990_2021_AVG_Bio14',
+    'WORLDCLIM_1990_2021_AVG_Bio15',
+    'WORLDCLIM_1990_2021_AVG_Bio16',
+    'WORLDCLIM_1990_2021_AVG_Bio17',
+    'WORLDCLIM_1990_2021_AVG_Bio18',
+    'WORLDCLIM_1990_2021_AVG_Bio19'
+]
+
+cols_presence = [
+    'crop',
+    'label',
+    'geometry'
+]
+
+cols_background = [
+    'crop_code',
+    'geometry'
+]
+
+
+#---------------------------------------- test data config -----------------------------------------
+
+
+config_test = {
+    'CDS' : pathlib.Path(os.path.join(PATH_TO_SAVE_TEST_DATA, "CDS")),
+    'WorldClim' : pathlib.Path(os.path.join(PATH_TO_SAVE_TEST_DATA, "WorldClim"))
+}
+
+
+
+# -------------------------------------- experiment config --------------------------------------------
+# spatial thining minium distance
+spatial_thinning_distance = {
+    'Brown_Marmorated_Stink_bug' : 15000,
+    'Corn_Earworm' : 2000,
+    'Large_Lady_Beetle' : 40000,
+    'Brown_Marmorated_Stink_bug_2' : 30000,
+    'Root_Weevil' : 500
+}

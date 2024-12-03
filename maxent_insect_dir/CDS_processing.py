@@ -35,13 +35,20 @@ def load_netcdf_files(climate_data_path: str):
     bioclim_lons : np.ndarray
         Array of longitude values from the datasets.
     """
-    netcdf_files = sorted([f for f in os.listdir(climate_data_path) if f.endswith('.nc')])
+    # Check if the path is a directory
+    if os.path.isdir(climate_data_path):
+        # If it's a directory, collect all .nc files in the directory
+        netcdf_files = sorted([f for f in os.listdir(climate_data_path) if f.endswith('.nc')])
+    else:
+        # If it's just a single file, wrap it in a list if it's a .nc file
+        netcdf_files = [climate_data_path]
+    
     bioclim_data_dict = {}
     bioclim_lats = None
     bioclim_lons = None
 
     for idx, nc_file in enumerate(netcdf_files):
-        file_path = os.path.join(climate_data_path, nc_file)
+        file_path = os.path.join(climate_data_path, nc_file) if os.path.isdir(climate_data_path) else climate_data_path
         dataset = xr.open_dataset(file_path)
         variable_name = list(dataset.data_vars)[0]  # Assuming each file has one variable
         bioclim_data_dict[variable_name] = dataset
