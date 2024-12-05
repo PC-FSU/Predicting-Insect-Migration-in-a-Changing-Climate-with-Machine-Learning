@@ -18,82 +18,9 @@ from maxent_insect_dir import config
 from maxent_insect_dir.utils_common import *
 from scipy.interpolate import griddata
 
-# def get_experiment_metadata(insect, climate_source, avg_period):
-#     """
-#     Generates metadata for a given experiment, including insect type, climate source, and averaging period.
-    
-#     Args:
-#         insect (str): The insect species to be modeled.
-#         climate_source (str): Source of climate data, e.g., 'WorldClim' or 'CDS'.
-#         avg_period (str): The averaging period for the climate data, e.g., '1970_2000' or '1990_2021'.
-        
-#     Returns:
-#         dict: A metadata dictionary containing presence data, background data, and relevant columns for the experiment.
-#     """
-#     # Initialize the metadata dictionary with insect, climate source, and empty placeholders
-#     metadata = {
-#         'insect': insect,
-#         'climate_source': climate_source,
-#         'presence_data': None,
-#         'background_data': None,
-#         'presence_cols': {
-#             'base': config.cols_presence
-#         },
-#         'background_cols': {
-#             'base': config.cols_background
-#         },
-#         'cols' : {}
-#     }
-    
-#     # Set presence and background data based on climate source
-#     if climate_source == 'WorldClim':
-#         metadata['presence_data'] = config_interim_WorldClim['presence'][insect]
-#         metadata['background_data'] = config_interim_WorldClim['background'][insect]
-#     else:
-#         metadata['presence_data'] = config_interim_CDS['presence'][insect]
-#         metadata['background_data'] = config_interim_CDS['background'][insect]
-    
-#     # Assign LUH2 columns based on the averaging period
-#     if avg_period == '1970_2000':
-#         # metadata['presence_original_cols'].append(config.LUH2_cols_1970_2000)
-#         # metadata['presence_cols']['LUH2'] = rename_cols(config.LUH2_cols_1970_2000)
-#         # metadata['background_original_cols'].append(config.LUH2_cols_1970_2000)
-#         # metadata['background_cols']['LUH2'] = rename_cols(config.LUH2_cols_1970_2000)
-#         metadata['cols']['LUH2'] = config.LUH2_cols_1970_2000
-#     else:
-#         # metadata['presence_original_cols'].append(config.LUH2_cols_1990_2021)
-#         # metadata['presence_cols']['LUH2'] = rename_cols(config.LUH2_cols_1990_2021)
-#         #metadata['background_cols']['LUH2'] = config.LUH2_cols_1990_2021
-#         metadata['cols']['LUH2'] = config.LUH2_cols_1990_2021
-    
-#     # metadata['background_original_cols'] = metadata['presence_original_cols'].copy()
-#     # metadata['background_cols']['LUH2'] = metadata['presence_cols']['LUH2'].copy()
-    
-#     # Assign bioclimatic columns based on climate source and averaging period
-#     if avg_period == '1970_2000' and climate_source == 'WorldClim':
-#         # metadata['presence_cols']['bioclim'] = config.WorldClim_cols_1970_2000
-#         # metadata['background_cols']['bioclim'] = config.WorldClim_cols_1970_2000
-#         metadata['cols']['bioclim'] = config.WorldClim_cols_1970_2000
-#     elif avg_period == '1970_2000' and climate_source == 'CDS':
-#         # metadata['presence_cols']['bioclim'] = config.CDS_cols_1970_2000
-#         # metadata['background_cols']['bioclim'] = config.CDS_cols_1970_2000
-#         metadata['cols']['bioclim'] = config.CDS_cols_1970_2000
-#     elif avg_period == '1990_2021' and climate_source == 'WorldClim':
-#         # metadata['presence_cols']['bioclim'] = config.WorldClim_cols_1990_2021
-#         # metadata['background_cols']['bioclim'] = config.WorldClim_cols_1990_2021
-#         metadata['cols']['bioclim'] = config.WorldClim_cols_1990_2021
-#     elif avg_period == '1990_2021' and climate_source == 'CDS':
-#         # metadata['presence_cols']['bioclim'] = config.CDS_cols_1990_2021
-#         # metadata['background_cols']['bioclim'] = config.CDS_cols_1990_2021
-#         metadata['cols']['bioclim'] = config.CDS_cols_1990_2021
-
-#     return metadata
 
 
-
-
-
-def get_experiment_metadata(insect, climate_source, avg_period):
+def get_experiment_metadata(insect, climate_source, avg_period, use_LUH2, spatial_weight):
     """
     Generates metadata for a given experiment, including insect type, climate source, and averaging period.
     
@@ -109,29 +36,16 @@ def get_experiment_metadata(insect, climate_source, avg_period):
     metadata = {
         'insect': insect,
         'climate_source': climate_source,
-        'presence_data': None,
-        'background_data': None,
+        'spatial_weight': spatial_weight,
+        'presence_data': os.path.join(config_interim['presence'], f'spatial_weight_{spatial_weight}', f'{insect}_intermediatory.gpkg'),
+        'background_data': os.path.join(config_interim['background'], f'spatial_weight_{spatial_weight}', f'{insect}_intermediatory.gpkg'),
         'base_cols': {
             'presence': config.cols_presence,
             'background': config.cols_background
         },
         'cols' : {}
     }
-    
-    # Set presence and background data based on climate source
-    if climate_source == 'WorldClim':
-        metadata['presence_data'] = config_interim_WorldClim['presence'][insect]
-        metadata['background_data'] = config_interim_WorldClim['background'][insect]
-    else:
-        metadata['presence_data'] = config_interim_CDS['presence'][insect]
-        metadata['background_data'] = config_interim_CDS['background'][insect]
-    
-    # Assign LUH2 columns based on the averaging period
-    if avg_period == '1970_2000':
-        metadata['cols']['LUH2'] = config.LUH2_cols_1970_2000
-    else:
-        metadata['cols']['LUH2'] = config.LUH2_cols_1990_2021
-    
+        
     
     # Assign bioclimatic columns based on climate source and averaging period
     if avg_period == '1970_2000' and climate_source == 'WorldClim':
@@ -142,53 +56,24 @@ def get_experiment_metadata(insect, climate_source, avg_period):
         metadata['cols']['bioclim'] = config.WorldClim_cols_1990_2021
     elif avg_period == '1990_2021' and climate_source == 'CDS':
         metadata['cols']['bioclim'] = config.CDS_cols_1990_2021
-
-    metadata['cols']['LUH2_renamed'] = rename_cols(metadata['cols']['LUH2'])
+        
     metadata['cols']['bioclim_renamed'] = rename_cols(metadata['cols']['bioclim'])
-    
+
+
+    if use_LUH2:
+        # Assign LUH2 columns based on the averaging period
+        if avg_period == '1970_2000':
+            metadata['cols']['LUH2'] = config.LUH2_cols_1970_2000
+        else:
+            metadata['cols']['LUH2'] = config.LUH2_cols_1990_2021
+            
+        metadata['cols']['LUH2_renamed'] = rename_cols(metadata['cols']['LUH2'])
+        
     return metadata
 
 
-def spatial_thinning(gdf, min_distance):
-    """
-    Performs spatial thinning on a GeoDataFrame.
 
-    Parameters:
-    - gdf: GeoDataFrame with point geometries
-    - min_distance: Minimum distance between points in meters
-
-    Returns:
-    - A GeoDataFrame with thinned points
-    """
-    # Extract coordinates
-    coords = np.array([(geom.x, geom.y) for geom in gdf.geometry])
-
-    # Build KDTree for efficient spatial queries
-    tree = cKDTree(coords)
-
-    # Initialize list to hold indices of points to keep
-    keep_indices = []
-    # Initialize a set to hold indices of points already considered
-    considered = set()
-
-    for idx in range(len(coords)):
-        if idx in considered:
-            continue
-        # Query points within min_distance
-        indices = tree.query_ball_point(coords[idx], r=min_distance)
-        # Add current index to keep_indices
-        keep_indices.append(idx)
-        # Mark all indices within min_distance as considered
-        considered.update(indices)
-
-    # Return the thinned GeoDataFrame
-    
-    gdf = gdf.iloc[keep_indices]
-    
-    return gdf.reset_index(drop=True)
-
-
-def load_data(insect, climate_source, avg_period):
+def load_data(insect, climate_source, avg_period, use_LUH2, use_crop, spatial_weight):
     """
     Loads presence and background data for the specified insect, climate source, and averaging period. 
     Additionally, it processes the data and ensures consistency between presence and background columns.
@@ -203,46 +88,59 @@ def load_data(insect, climate_source, avg_period):
     """
     
     # Get metadata for the experiment and make a deep copy to avoid altering the original structure
-    metadata = copy.deepcopy(get_experiment_metadata(insect, climate_source, avg_period))
+    metadata = copy.deepcopy(get_experiment_metadata(insect, climate_source, avg_period, use_LUH2, spatial_weight))
 
     
     # Load presence and background data
     presence = safe_read_file(metadata['presence_data'])
     background = safe_read_file(metadata['background_data'])
     
-    
-    # Flatten and extract relevant columns for presence and background
-    presence_cols = metadata['base_cols']['presence'] + metadata['cols']['LUH2'] + metadata['cols']['bioclim']
-    background_cols = metadata['base_cols']['background'] + metadata['cols']['LUH2'] + metadata['cols']['bioclim']
 
+    # Flatten and extract relevant columns for presence and background
+    presence_cols = metadata['base_cols']['presence'] + metadata['cols']['bioclim']  
+    background_cols = metadata['base_cols']['background'] + metadata['cols']['bioclim']
+
+    if use_LUH2:
+        presence_cols += metadata['cols']['LUH2']
+        background_cols += metadata['cols']['LUH2']
+    
     # Subset presence and background data based on selected columns
     presence_ = presence[presence_cols].copy()
     background_ = background[background_cols].copy()
+
 
     # Add label column to background data and update metadata
     background_.loc[:, 'label'] = 0
     metadata['base_cols']['background'].append('label')
 
-    # Map crop names to crop codes and update presence data, and metadata
-    crop_mapping = pd.read_csv(config_raw['crop_mapping_config'])
-    crop_mapping_dict = dict(zip(crop_mapping['Crop'], crop_mapping['Code']))
-    presence_.loc[:, 'crop_code'] = presence_['crop'].map(crop_mapping_dict)
-    presence_ = presence_.drop('crop', axis=1)
-    metadata['base_cols']['presence'].append('crop_code')
-    metadata['base_cols']['presence'].remove('crop')
+    if use_crop:
+        # Map crop names to crop codes and update presence data, and metadata
+        crop_mapping = pd.read_csv(config_raw['crop_mapping_config'])
+        crop_mapping_dict = dict(zip(crop_mapping['Crop'], crop_mapping['Code']))
+        presence_.loc[:, 'crop_code'] = presence_['crop'].map(crop_mapping_dict)
+        presence_ = presence_.drop('crop', axis=1)
+        metadata['base_cols']['presence'].append('crop_code')
+        metadata['base_cols']['presence'].remove('crop')
+    
+    if not use_crop:
+        presence_ = presence_.drop('crop', axis=1)
+        background_ = background_.drop('crop_code', axis=1)
     
     # Reorder columns for consistency
     presence_ = presence_.reindex(sorted(presence_.columns), axis=1)
     background_ = background_.reindex(sorted(background_.columns), axis=1)
 
-    # rename the columns
-    presence_.rename(columns=metadata['cols']['LUH2_renamed'], inplace=True)
+    # rename the columns    
     presence_.rename(columns=metadata['cols']['bioclim_renamed'], inplace=True)
-    background_.rename(columns=metadata['cols']['LUH2_renamed'], inplace=True)
     background_.rename(columns=metadata['cols']['bioclim_renamed'], inplace=True)
+    
+    if use_LUH2:
+        presence_.rename(columns=metadata['cols']['LUH2_renamed'], inplace=True)
+        background_.rename(columns=metadata['cols']['LUH2_renamed'], inplace=True)
     
     # Ensure columns match between presence and background data
     assert set(presence_.columns) == set(background_.columns), 'Columns for presence and background do not match'
+
     
     presence_=filter_outlier(drop_points_outside_us(presence_))
     background_=filter_outlier(drop_points_outside_us(background_))

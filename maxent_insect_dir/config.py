@@ -6,10 +6,10 @@ import os
 
 
 # Path to save initial visualization of insect map and time series
-PATH_TO_SAVE_INITIAL_DATA_VIS_INSECT = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/reports/figures")
+PATH_TO_SAVE_DATA_VISUALIZATION_INSECT = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/reports/figures")
 
-# Path to save intermediatory processed insect data. 
-PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA = pathlib.Path("/data/Maxent/data/interim")
+# Path to save processed insect data. 
+PATH_TO_SAVE_PRESENCE_POINTS = pathlib.Path("/data/Maxent/data/interim/presence")
 
 # Paths to data downloaded from the EDD site
 EDD_DATA_PATH = pathlib.Path("/data/Maxent/data/raw/Species Data/Guna/EDD Maps Site")
@@ -149,45 +149,9 @@ config_bias_rasters = {
     'Root_Weevil': pathlib.Path(os.path.join(BIAS_RASTERS_PATH, "root_weevil_GBIF_bias_file.tif"))
 }
 
-
-
-#---------------------------------------- interim data config -----------------------------------------
-
-
-# config dictionary for interim data. the path is same as where the interim data were saved.
-
-config_interim_CDS = {
-    'presence' : {
-        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
-        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Corn_Earworm_EDD_intermediatory.gpkg")),
-        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
-        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
-        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "CDS", "Root_Weevil_GBIF_intermediatory.gpkg"))
-    },
-    'background': {
-        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
-        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Corn_Earworm_EDD_intermediatory.gpkg")),
-        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
-        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
-        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "CDS", "Root_Weevil_GBIF_intermediatory.gpkg"))
-    }
-}
-
-config_interim_WorldClim = {
-    'presence' : {
-        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
-        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Corn_Earworm_EDD_intermediatory.gpkg")),
-        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
-        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
-        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_INTERMEDIATORY_INSECT_DATA, "WorldClim", "Root_Weevil_GBIF_intermediatory.gpkg"))
-    },
-    'background': {
-        'Brown_Marmorated_Stink_bug': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Brown_Marmorated_Stink_bug_EDD_intermediatory.gpkg")),
-        'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Corn_Earworm_EDD_intermediatory.gpkg")),
-        'Large_Lady_Beetle': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Large_Lady_Beetle_EDD_intermediatory.gpkg")),
-        'Brown_Marmorated_Stink_bug_2': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Brown_Marmorated_Stink_bug_2_GBIF_intermediatory.gpkg")),
-        'Root_Weevil': pathlib.Path(os.path.join(PATH_TO_SAVE_BACKGROUND_POINTS, "WorldClim", "Root_Weevil_GBIF_intermediatory.gpkg"))
-    }
+config_interim = {
+    'background' : pathlib.Path('/data/Maxent/data/interim/backgrounds'),
+    'presence' : pathlib.Path('/data/Maxent/data/interim/presence')
 }
 
 

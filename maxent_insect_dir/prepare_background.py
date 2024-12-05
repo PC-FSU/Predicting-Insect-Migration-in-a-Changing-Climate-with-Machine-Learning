@@ -5,11 +5,13 @@ import numpy as np
 import rasterio as rio
 from rasterio.warp import transform_geom
 import elapid as ela
+import shutil 
 import pathlib
 from scipy.stats import mode
 from shapely.geometry import Point
 from maxent_insect_dir.config import *
 from maxent_insect_dir.utils_common import *
+from maxent_insect_dir.spatial_kde import spatial_kernel_density
 from typing import Dict, List, Union
 
 from elapid.types import CRSType, to_iterable
@@ -138,7 +140,7 @@ def draw_background(bias_raster: str = None, count: int = 10000) -> gpd.GeoDataF
 
 
 # Function to get crop and bioclim intersection based on the climate source
-def get_crop_bioclim_intersection_background(gdf, id_column, climate_source):
+def get_crop_bioclim_intersection_background(gdf, id_column):
     """Performs crop and bioclimatic data intersection for insect data."""
     
     print('\n.......Getting the LUH2 avgs for 1970_2000......\n')
@@ -157,47 +159,90 @@ def get_crop_bioclim_intersection_background(gdf, id_column, climate_source):
         label_prefix='LUH2_1990_2021_AVG_'    
     )
     
+
+    print('\n.......Getting the Bioclim avgs for 1970_2000 (WorldClim)......\n')
+    data_ = bioclim_avg_insect_intersection(
+        raster_path=config_raw['climate_data_worldclim']['avgs']['1970_2000'],
+        gfd=data_,
+        id_column=id_column,
+        label_prefix='WORLDCLIM_1970_2000_AVG_'
+    )
     
-    # WorldClim: Get yearly and monthly averages
-    if climate_source == 'WorldClim':
-        print('\n.......Getting the Bioclim avgs for 1970_2000 (WorldClim)......\n')
-        data_ = bioclim_avg_insect_intersection(
-            raster_path=config_raw['climate_data_worldclim']['avgs']['1970_2000'],
-            gfd=data_,
-            id_column=id_column,
-            label_prefix='WORLDCLIM_1970_2000_AVG_'
-        )
+    print('\n.......Getting the Bioclim avgs for 1990_2021 (WorldClim)......\n')
+    data_ = bioclim_avg_insect_intersection(
+        raster_path=config_raw['climate_data_worldclim']['avgs']['1990_2021'],
+        gfd=data_,
+        id_column=id_column,
+        label_prefix='WORLDCLIM_1990_2021_AVG_'
+    )
+    
+
+    # CDS: Get bioclim data for CDS dataset
+    print('\n.......Getting Bioclim data (CDS)......\n')
+    
+    print('\n.......Getting the Bioclim avgs for 1970_2000 (CDS)......\n')
+    data_ = bioclim_avg_insect_intersection(
+        raster_path=config_raw['climate_data_CDS']['avgs']['1970_2000'],
+        gfd=data_,
+        id_column=id_column,
+        label_prefix='CDS_1970_2000_AVG_'
+    )
+    
+    print('\n.......Getting the Bioclim avgs for 1990_2021 (CDS)......\n')
+    data_ = bioclim_avg_insect_intersection(
+        raster_path=config_raw['climate_data_CDS']['avgs']['1990_2021'],
+        gfd=data_,
+        id_column=id_column,
+        label_prefix='CDS_1990_2021_AVG_'
+    )
         
-        print('\n.......Getting the Bioclim avgs for 1990_2021 (WorldClim)......\n')
-        data_ = bioclim_avg_insect_intersection(
-            raster_path=config_raw['climate_data_worldclim']['avgs']['1990_2021'],
-            gfd=data_,
-            id_column=id_column,
-            label_prefix='WORLDCLIM_1990_2021_AVG_'
-        )
+    
+    return data_
+
+
+
+def spatial_weighting(presence, weight=0, count=1e3):
+    # weight 1 means everything from the bias, 0 mean everything is uniform
+    n_point_biased =  int(count*weight) 
+    n_point_uniform = int(count - n_point_biased)
+    
+    print(f'Number of point selected | uniformly: {n_point_uniform}  | with bias: {n_point_biased}\n\n')
+    
+    dir_path = 'temp'
+    bias_raster = os.path.join(dir_path, 'bias.tif')
+    if not os.path.exists(dir_path):
+        # Create the directory
+        os.makedirs(dir_path)
+        print(f"Directory '{dir_path}' created.")
         
-        return data_
-        
+    # create the bias using presence point
+    spatial_kernel_density(
+        points=presence,
+        radius=160000,
+        output_path=bias_raster,
+        output_pixel_size = 16000,
+        output_driver='GTiff',
+        scaled=True,
+        weight_col='SampleWeight'
+    )
+
+    
+    # uniform raster path
+    raster_uniform = pathlib.Path("/data/Maxent/data/raw/crop_data/2008_30m_cdls/2008_30m_cdls_resampled_0.25.tif")
+    print(f'Loading uniformly from the domain defined by raster: {raster_uniform}')
+
+
+    point_sampled_uniformly = gpd.GeoDataFrame(geometry=[], crs="EPSG:5070")   
+    point_sampled_with_bias = gpd.GeoDataFrame(geometry=[], crs="EPSG:5070")
+    
+    if weight == 0:
+        point_sampled_uniformly =  draw_points_uniformly(raster_uniform, n_point_uniform, nodata=0)
+    elif weight == 1:
+        point_sampled_with_bias =  draw_background(bias_raster=bias_raster, count=n_point_biased)
     else:
-        # CDS: Get bioclim data for CDS dataset
-        print('\n.......Getting Bioclim data (CDS)......\n')
-        
-        print('\n.......Getting the Bioclim avgs for 1970_2000 (CDS)......\n')
-        data_ = bioclim_avg_insect_intersection(
-            raster_path=config_raw['climate_data_CDS']['avgs']['1970_2000'],
-            gfd=data_,
-            id_column=id_column,
-            label_prefix='CDS_1970_2000_AVG_'
-        )
-        
-        print('\n.......Getting the Bioclim avgs for 1990_2021 (CDS)......\n')
-        data_ = bioclim_avg_insect_intersection(
-            raster_path=config_raw['climate_data_CDS']['avgs']['1990_2021'],
-            gfd=data_,
-            id_column=id_column,
-            label_prefix='CDS_1990_2021_AVG_'
-        )
-        
-        return data_
+        point_sampled_uniformly = draw_points_uniformly(raster_uniform, n_point_uniform, nodata=0)
+        point_sampled_with_bias = draw_background(bias_raster=bias_raster, count=n_point_biased)
     
+    shutil.rmtree(dir_path)
     
+    return gpd.GeoDataFrame(pd.concat([point_sampled_uniformly, point_sampled_with_bias], ignore_index=True))

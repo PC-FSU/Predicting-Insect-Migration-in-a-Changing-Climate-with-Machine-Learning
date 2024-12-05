@@ -15,8 +15,7 @@ warnings.filterwarnings("ignore")
 
 
 
-
-def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sample_weights=True, save=False, variable_selection='both'):
+def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sample_weights=True, save=False, use_LUH2=False, use_crop=True):
     """
     Main function to run the Maxent model, compute sample weights, and evaluate model performance.
     Saves metadata, including AUC scores and continuous Boyce index, if specified.
@@ -29,7 +28,6 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
     - plot: Boolean to enable plotting of sample weights and results
     - use_sample_weights: If true, use sample weight for training
     - save: Boolean to save model and metadata
-    - variable_selection: 'bioclim', 'LUH2', or 'both' to select variables
     """
     
     print(f'Number of presence point :{df_presence.shape[0]}, Number of background point :{df_background.shape[0]}....\n\n')
@@ -45,9 +43,11 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
     if plot:
         print("Step 2a: Plotting sample weights...\n\n")
         plot_sample_weights(df_presence, df_background)
+        
         print("Step 2b: Plotting presence data...\n\n")
         _ = df_presence.hist(figsize=(30,30), grid=False)
         plt.show()
+        
         print("Step 2c: Plotting background data...\n\n")
         _ = df_background.hist(figsize=(30,30), grid=False)
         plt.show()
@@ -55,60 +55,51 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
     # Merge datasets
     merged = ela.stack_geodataframes(df_presence, df_background)
 
-    # Separating LUH2 and Bioclim columns based on variable_selection
-    if variable_selection in ['LUH2', 'both']:
+    # Separating LUH2 and Bioclim columns to perform dimensionality reduction
+    if use_LUH2:
         df_LUH2 = merged[list(metadata['cols']['LUH2_renamed'].values())]
     else:
         df_LUH2 = pd.DataFrame()
-
-    if variable_selection in ['bioclim', 'both']:
-        df_Bioclim = merged[list(metadata['cols']['bioclim_renamed'].values())]
-    else:
-        df_Bioclim = pd.DataFrame()
-
+        
     print("Step 3: Removing highly correlated variables....\n\n")
     if not df_LUH2.empty:
         df_LUH2_uncorr = remove_uncorrelated_columns(df_LUH2, threshold, plot=plot)
     else:
         df_LUH2_uncorr = pd.DataFrame()
 
-    if not df_Bioclim.empty:
-        df_Bioclim_uncorr = remove_uncorrelated_columns(df_Bioclim, threshold, plot=plot)
-    else:
-        df_Bioclim_uncorr = pd.DataFrame()
+
+    df_Bioclim = merged[list(metadata['cols']['bioclim_renamed'].values())]
+    df_Bioclim_uncorr = remove_uncorrelated_columns(df_Bioclim, threshold, plot=plot)
+
 
     print("Step 4: Combining selected variables and updating metadata....\n\n")
     #columns_to_keep = ['crop_code', 'SampleWeight', 'label', 'geometry']
     columns_to_keep = ['SampleWeight', 'label', 'geometry']
+    if use_crop:
+        columns_to_keep.append('crop_code')
+    
     df_list = [df_LUH2_uncorr, df_Bioclim_uncorr, merged[columns_to_keep]]
     df_merged_uncorr = pd.concat(df_list, axis=1)
     df_merged_uncorr = gpd.GeoDataFrame(df_merged_uncorr, geometry='geometry')
-    metadata['uncorr_var'] = df_merged_uncorr.columns.tolist()
-    
-    
-    print(f'col used in training : {metadata['uncorr_var']}...\n\n')
+
     
     # final check for CRS
     if df_merged_uncorr.crs.to_epsg() != 5070:
         raise ValueError("df_merged_uncorr must be in CRS EPSG:5070 (USA Contiguous Albers Equal Area Conic projection). Please reproject your GeoDataFrame before proceeding.")
-        import sys; sys.exit()
+        
 
-    print("Step 4a: Performming train-test split....\n\n")
+    print("Step 4a: Performing train-test split....\n\n")
     # Splitting data into train and test sets.
     x_train, y_train, x_test, y_test, sample_weight_train, sample_weight_test, train_gdf, test_gdf = get_train_test_split(df_merged_uncorr, plot=plot)
-    
     metadata['col_used_in_train'] = x_train.columns.tolist()
     metadata['train_gdf'] = train_gdf
     metadata['test_gdf'] = test_gdf
-
+    print(f'col used in training : {metadata['col_used_in_train']}...\n\n')
     
-    # # List of column names you want to find indices for
-    # column_names = ['crop_code']
-    column_names = None
-
-    # Use get_loc to find the index of each column
-    cat_indices = [x_train.columns.get_loc(col) for col in column_names] if column_names is not None else None
-    metadata['categorical_columns'] = list(zip(cat_indices, column_names)) if column_names is not None else None
+    # For categorical columns
+    cat_column_names = ['crop_code'] if use_crop else None  # List of column names you want to find indices for
+    cat_indices = [x_train.columns.get_loc(col) for col in cat_column_names] if cat_column_names is not None else None   # Use get_loc to find the index of each column
+    metadata['categorical_columns'] = list(zip(cat_indices, cat_column_names)) if cat_column_names is not None else None
 
     print("Step 5: Setting up and fitting the Maxent model....\n\n")
     maxent = ela.MaxentModel()
@@ -129,14 +120,7 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
     maxent.classes_ = np.array(maxent.classes_)
 
     # Calculate permutation importance
-    result = permutation_importance(
-        maxent,
-        x_test,
-        y_test,
-        n_repeats=10,
-        random_state=42,
-        scoring=scorer,
-    )
+    result = permutation_importance(maxent, x_test, y_test, n_repeats=10, random_state=42, scoring=scorer)
 
     # Store feature importance in metadata
     feature_importance = pd.Series(result.importances_mean, index=x_test.columns)
@@ -149,7 +133,6 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
         plt.ylabel('Mean Decrease in AUC')
         plt.show()
     
-
 
     print("Step 7: Predicting on test set and calculating AUC scores....\n\n")
     y_pred = maxent.predict(x_test)
@@ -212,94 +195,67 @@ def future_projection(df, metadata):
 
     return df_pred, df_test
 
+
+
 if __name__ == '__main__':
-    # # Parse command-line arguments for insect name, average period, and climate source
-    # parser = argparse.ArgumentParser(description='Pipeline to run maxent models')
-    # parser.add_argument('--insect_name', type=str, required=True, help='The name of the insect to process.')
-    # parser.add_argument('--avg_period', type=str, required=True, choices=['1970_2000', '1990_2021'], help='Average time period to consider.')
-    # parser.add_argument('--climate_source', type=str, required=True, choices=['WorldClim', 'CDS'], help='Climate data source (WorldClim or CDS).')
-    # args = parser.parse_args()
     
-    # # Extract command-line arguments
-    # INSECT_NAME = args.insect_name
-    # AVG_PERIOD = args.avg_period
-    # CLIMATE_SOURCE = args.climate_source
-    # plot, save = True, True
-    
-    # # Load data for experiment
-    # presence, background, metadata = load_data(insect=INSECT_NAME, climate_source='CDS', avg_period='1970_2000')
-    
-    
-
-    
-    #INSECT_NAME = 'Root_Weevil'
-    Insects = ['Brown_Marmorated_Stink_bug', 'Corn_Earworm', 'Large_Lady_Beetle', 'Root_Weevil']
-    Climate_sources = ['WorldClim', 'CDS']
-    # Climate_sources = ['WorldClim']
-    Avg_periods = ['1970_2000', '1990_2021']
+    insect_name = 'Brown_Marmorated_Stink_bug'
+    climate_source = 'CDS'
+    avg = '1970_2000'
+    spatial_weight = 0.75
+    use_LUH2 = False
+    use_crop = True
     # Avg_periods = ['1970_2000']
-    plot, save = False, True
+    plot, save = True, True
 
 
-    for insect_name in Insects:
-        for source in Climate_sources:
-            for avg in Avg_periods:
-                presence, background, metadata = load_data(insect=insect_name, climate_source=source, avg_period=avg)
-                # Filter the presence DataFrame to get rows with label 1
-                presence = presence[presence['label'] == 1].reset_index(drop=True)
-                n_presence = presence.shape[0]
-
-                # change the crs to 5070
-                presence = presence.to_crs(epsg=5070)
-                background = background.to_crs(epsg=5070)
-
-                # Set the minimum distance in meters (e.g., 5,000 meters for 5 km)
-                min_distance = spatial_thinning_distance[insect_name]
-                # min_distance = 50000
-
-                # Apply spatial thinning
-                presence = spatial_thinning(presence, min_distance)            
-                
-                print(f'Insect : {insect_name} | source : {source} | avg : {avg} | presence sample : {n_presence} | presence_thinned.shape : {presence.shape} | background.shape: {background.shape}.')
-                metadata['n_presence_thinned'] = presence.shape[0]
-                metadata['min_distance'] = min_distance
-        
+    presence, background, metadata = load_data(insect_name, climate_source, avg, use_LUH2, use_crop, spatial_weight)
     
-                if save:
-                    # Add timestamp to metadata
-                    timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M')
-                    path = os.path.join(PATH_TO_SAVE_RESULTS, f'{insect_name}_{avg}_{source}_{timestamp}')
-                    
-                    # Check if the directories exist, create them if necessary
-                    if not os.path.exists(path):
-                        os.makedirs(path)
-                        print(f"Directory {path} created.")
-                    else:
-                        print(f"Directory {path} already exists.")
-                    
-                    metadata['model_metadata_path'] = path
-                    
-                    
+    
+    # print(presence.columns)
+    # print(background.columns)
+    # import sys; sys.exit()
 
-                experiment_states = main(presence, background, metadata, threshold=0.9, plot=plot, save=save, variable_selection='bioclim')
-                
-                # Run future projections
-                print('Running future projections over the US...\n\n\n\n\n')
-                dirs = ['2021', '2040', '2060', '2080', '2100']
-                future_projections = {}
-                for dir in dirs:
-                    file = os.path.join(config.PATH_TO_SAVE_TEST_DATA, dir, f'{dir}_count_10000.gpkg')
-                    df = safe_read_file(file)
-                    df_pred, df_test = future_projection(df, metadata=experiment_states)
-                    
-                    if plot:
-                        fig, ax = plt.subplots(figsize=(10, 8))
-                        df_pred.plot(column='predictions', cmap='viridis', legend=True, ax=ax, alpha=0.25)
-                        ax.set_title("Prediction Map")
-                        plt.show()
+    print(f'Insect : {insect_name} | source : {climate_source} | avg : {avg} | presence.shape : {presence.shape} | background.shape: {background.shape}.')
+    metadata['n_presence_thinned'] = presence.shape[0]
+    metadata['min_distance'] = spatial_thinning_distance[insect_name]
 
-                    future_projections[dir] = df_pred
-                
-                # Save future projections if save option is enabled
-                if save:
-                    joblib.dump(future_projections, os.path.join(metadata['model_metadata_path'], 'future_projections.pkl'))
+
+    if save:
+        # Add timestamp to metadata
+        timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M')
+        path = os.path.join(PATH_TO_SAVE_RESULTS, f'{insect_name}_{avg}_{climate_source}_spatial_weight_{spatial_weight}_{timestamp}')
+        
+        # Check if the directories exist, create them if necessary
+        if not os.path.exists(path):
+            os.makedirs(path)
+            print(f"Directory {path} created.")
+        else:
+            print(f"Directory {path} already exists.")
+        
+        metadata['model_metadata_path'] = path
+        
+        
+
+    experiment_states = main(presence, background, metadata, threshold=0.9, plot=plot, save=save, use_LUH2=use_LUH2, use_crop=use_crop)
+    
+    # Run future projections
+    print('Running future projections over the US...\n\n\n\n\n')
+    dirs = ['2021', '2040', '2060', '2080', '2100']
+    future_projections = {}
+    for dir in dirs:
+        file = os.path.join(config.PATH_TO_SAVE_TEST_DATA, dir, f'{dir}_count_10000.gpkg')
+        df = safe_read_file(file)
+        df_pred, df_test = future_projection(df, metadata=experiment_states)
+        
+        if plot:
+            fig, ax = plt.subplots(figsize=(10, 8))
+            df_pred.plot(column='predictions', cmap='viridis', legend=True, ax=ax, alpha=0.25)
+            ax.set_title("Prediction Map")
+            plt.show()
+
+        future_projections[dir] = df_pred
+    
+    # Save future projections if save option is enabled
+    if save:
+        joblib.dump(future_projections, os.path.join(metadata['model_metadata_path'], 'future_projections.pkl'))

@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description='Pipeline to prepare background poi
 parser.add_argument('--insect_name', type=str, required=True, help='The name of the insect to process.')
 parser.add_argument('--download_source', type=str, required=True, choices=['EDD', 'GBIF'], help='The data source to use (either EDD or GBIF).')
 parser.add_argument('--climate_source', type=str, required=True, choices=['WorldClim', 'CDS'], help='The climate data source to use (either WorldClim or CDS).')
-parser.add_argument('--use_Bias_raster', type=bool, required=True, help='If True, bias_raster will be used. If False, points will be drawn uniformly.')
+parser.add_argument('--spatial_weight', type=float, required=True, help='.')
 
 args = parser.parse_args()
 
@@ -43,8 +43,6 @@ if not os.path.exists(PATH_SAVE_FIG):
     print(f"Directory {PATH_SAVE_FIG} created.")
 else:
     print(f"Directory {PATH_SAVE_FIG} already exists.")
-    
-
 
 
 

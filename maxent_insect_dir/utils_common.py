@@ -8,8 +8,9 @@ import numpy as np
 import xarray as xr
 import re
 from typing import Dict, List, Union
-
+from scipy.spatial import cKDTree
 from maxent_insect_dir.config import *
+
 
 
 ################### General Utils ################################################
@@ -57,6 +58,9 @@ def drop_points_outside_us(gdf):
     Returns:
     GeoDataFrame: A GeoDataFrame with points only within the US bounding box.
     """
+    if not gdf.crs.is_geographic:
+        # change the crs to 4326
+        gdf = gdf.to_crs(epsg=4326) 
     # Define the bounding box with margin of error
     lat_min = 23.896308
     lat_max = 49.884358
@@ -78,7 +82,7 @@ def drop_points_outside_us(gdf):
     # Drop temporary longitude and latitude columns
     gdf_filtered = gdf_filtered.drop(columns=['longitude', 'latitude'])
     
-    return gdf_filtered
+    return gdf_filtered.to_crs(epsg=5070)
 
 
 def filter_outlier(gdf):
@@ -135,7 +139,7 @@ def plot_data(gdf, plot_info, save_path, show_plots=True):
     # Handle different plot types
     if plot_type == 'map':
         # Plot geographic points (such as locations on a map) using the specified column for color coding
-        gdf.plot(marker='o', column=column, cmap='viridis', legend=True)
+        gdf.plot(marker='o', column=column, cmap='viridis', legend=True, alpha=0.1)
     
     elif plot_type == 'timeseries':
         # Plot a time series showing how a value (such as insect count) changes over time
@@ -406,3 +410,42 @@ def bioclim_avg_insect_intersection(
 
 # alias for LUH2
 LUH2_intersection = bioclim_avg_insect_intersection
+
+
+def spatial_thinning(gdf, min_distance):
+    """
+    Performs spatial thinning on a GeoDataFrame.
+
+    Parameters:
+    - gdf: GeoDataFrame with point geometries
+    - min_distance: Minimum distance between points in meters
+
+    Returns:
+    - A GeoDataFrame with thinned points
+    """
+    # Extract coordinates
+    coords = np.array([(geom.x, geom.y) for geom in gdf.geometry])
+
+    # Build KDTree for efficient spatial queries
+    tree = cKDTree(coords)
+
+    # Initialize list to hold indices of points to keep
+    keep_indices = []
+    # Initialize a set to hold indices of points already considered
+    considered = set()
+
+    for idx in range(len(coords)):
+        if idx in considered:
+            continue
+        # Query points within min_distance
+        indices = tree.query_ball_point(coords[idx], r=min_distance)
+        # Add current index to keep_indices
+        keep_indices.append(idx)
+        # Mark all indices within min_distance as considered
+        considered.update(indices)
+
+    # Return the thinned GeoDataFrame
+    
+    gdf = gdf.iloc[keep_indices]
+    
+    return gdf.reset_index(drop=True)
