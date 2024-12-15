@@ -99,24 +99,26 @@ def get_background(presence, count, weight, crop_mapping_dict, path_save_fig, pa
 
 if __name__ =='__main__':
 
-    # Argument parser to accept INSECT_NAME, DOWNLOAD_SOURCE, and CLIMATE_SOURCE from command line
-    parser = argparse.ArgumentParser(description='Pipeline to prepare presence and background points')
-    parser.add_argument('--insect_name', type=str, required=True, help='The name of the insect to process.')
-    parser.add_argument('--insect_source', type=str, required=True, choices=['EDD', 'GBIF'], help='The data source to use (either EDD or GBIF).')
-    #parser.add_argument('--climate_source', type=str, required=True, choices=['WorldClim', 'CDS'], help='The climate data source to use (either WorldClim or CDS).')
-    parser.add_argument('--spatial_weight', type=float, required=True, help='weight 1 means all background point are selected from the bias, 0 mean everything are selected uniformly')
-    parser.add_argument('--count', type=int, required=True, help='Total number of background point to generate')
+    # # Argument parser to accept INSECT_NAME, DOWNLOAD_SOURCE, and CLIMATE_SOURCE from command line
+    # parser = argparse.ArgumentParser(description='Pipeline to prepare presence and background points')
+    # parser.add_argument('--insect_name', type=str, required=True, help='The name of the insect to process.')
+    # parser.add_argument('--insect_source', type=str, required=True, choices=['EDD', 'GBIF'], help='The data source to use (either EDD or GBIF).')
+    # parser.add_argument('--spatial_weight', type=float, required=True, help='weight 1 means all background point are selected from the bias, 0 mean everything are selected uniformly')
+    # parser.add_argument('--count', type=int, required=True, help='Total number of background point to generate')
 
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
-    # Use the command-line arguments for INSECT_NAME, DOWNLOAD_SOURCE, and CLIMATE_SOURCE
-    insect_name = args.insect_name
-    insect_source = args.insect_source
-    #climate_source = args.climate_source
-    spatial_weight = args.spatial_weight
-    count = args.count
+    # # Use the command-line arguments for INSECT_NAME, DOWNLOAD_SOURCE, and CLIMATE_SOURCE
+    # insect_name = args.insect_name
+    # insect_source = args.insect_source
+    # spatial_weight = args.spatial_weight
+    # count = args.count
 
+    insect_name = 'Brown_Marmorated_Stink_bug'
+    insect_source = 'EDD'
+    spatial_weight = 0.90
+    count = 10000
 
     # Define paths and insect data based on the command-line arguments
     insect_data = config_raw['insect'][insect_source][insect_name]

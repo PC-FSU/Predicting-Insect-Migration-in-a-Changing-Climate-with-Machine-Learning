@@ -161,12 +161,14 @@ def rename_cols(col_list):
     return col_map
 
 
-def plot_correlation_matrix(corr_matrix, title):
+def plot_correlation_matrix(corr_matrix, title, save_path):
     """Function to plot the correlation matrix using seaborn heatmap"""
     plt.figure(figsize=(10, 8))
     sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, square=True)
     plt.title(title)
     plt.show()
+    if save_path is not None:
+        plt.savefig(save_path)
 
 
 def remove_highly_correlated(df, threshold=0.9):
@@ -187,7 +189,7 @@ def remove_highly_correlated(df, threshold=0.9):
     return df.drop(to_drop, axis=1)
 
 
-def remove_uncorrelated_columns(df, threshold = 0.9, plot=False):
+def remove_uncorrelated_columns(df, threshold, save_path, tag, plot=False):
     # Remove highly correlated features
     df_filtered = remove_highly_correlated(df, threshold=threshold)
     
@@ -195,13 +197,22 @@ def remove_uncorrelated_columns(df, threshold = 0.9, plot=False):
     corr_matrix = df.corr()
     corr_matrix_uncorr = df_filtered.corr()
     if plot:
-        plot_correlation_matrix(corr_matrix, "Correlation Matrix Before Removing Highly Correlated Features")
-        plot_correlation_matrix(corr_matrix_uncorr, "Correlation Matrix After Removing Highly Correlated Features")    
+        plot_correlation_matrix(
+            corr_matrix,
+            "Correlation Matrix Before Removing Highly Correlated Features",
+            os.path.join(save_path, tag + '_corr.png')
+        )
+        
+        plot_correlation_matrix(
+            corr_matrix_uncorr,
+            "Correlation Matrix After Removing Highly Correlated Features",
+            os.path.join(save_path, tag + '_uncorr.png')
+        )    
     
     return df_filtered
 
 
-def plot_sample_weights(df_presence, df_background):
+def plot_sample_weights(df_presence, df_background, save_path):
     
     _, ax = plt.subplots(1,2,figsize=(15,3))
     df_presence.plot(column='SampleWeight', legend=True, cmap='YlOrBr', ax=ax[0])
@@ -216,9 +227,11 @@ def plot_sample_weights(df_presence, df_background):
     ax[1].set_title('background sampleweight')
     
     plt.show()
+    if save_path is not None:
+        plt.savefig(save_path)
 
 
-def get_train_test_split(df, grid_size=0.05, plot=False):
+def get_train_test_split(df, use_sample_weights=False, save_path=False, grid_size=0.05, plot=False):
     
     if not df.crs.is_geographic:
         grid_size = 50000
@@ -236,21 +249,29 @@ def get_train_test_split(df, grid_size=0.05, plot=False):
     test_gdf = gpd.GeoDataFrame(test, geometry='geometry', crs=df.crs)
     
     # split train-test
-    x_train = train.drop(columns=['label', 'SampleWeight', 'split', 'geometry'])
+    columns = ['label', 'split', 'geometry']
+    if use_sample_weights:
+        columns.append('SampleWeight')
+        
+    x_train = train.drop(columns=columns)
     y_train = train['label']
-    sample_weight_train = train['SampleWeight']
-
-    x_test = test.drop(columns=['label', 'SampleWeight', 'split', 'geometry'])
+    x_test = test.drop(columns=columns)
     y_test = test['label']
-    sample_weight_test = test['SampleWeight']
     
     if plot:
         checker = ela.stack_geodataframes(train, test)
         checker.plot(column='split', markersize=0.75, legend=True)
         plt.show()
-    
-    return x_train, y_train, x_test, y_test, sample_weight_train, sample_weight_test, train_gdf, test_gdf
+        if save_path is not None:
+            plt.savefig(save_path)
 
+    if use_sample_weights:
+        sample_weight_train = train['SampleWeight']
+        sample_weight_test = test['SampleWeight']    
+        return x_train, y_train, x_test, y_test, sample_weight_train, sample_weight_test, train_gdf, test_gdf
+    else:
+        return x_train, y_train, x_test, y_test, train_gdf, test_gdf
+    
 
 def plot_prediction_field(x, y, z):
     

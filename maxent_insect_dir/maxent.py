@@ -14,7 +14,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-
 def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sample_weights=True, save=False, use_LUH2=False, use_crop=True):
     """
     Main function to run the Maxent model, compute sample weights, and evaluate model performance.
@@ -26,31 +25,46 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
     - metadata: Dictionary to store model metadata and experiment details
     - threshold: Correlation threshold for filtering covariates
     - plot: Boolean to enable plotting of sample weights and results
-    - use_sample_weights: If true, use sample weight for training
+    - use_sample_weights: 
     - save: Boolean to save model and metadata
     """
     
     print(f'Number of presence point :{df_presence.shape[0]}, Number of background point :{df_background.shape[0]}....\n\n')
     
-    print("Step 1: Computing sample weights for presence and background data....\n\n")
-    df_presence['SampleWeight'] = ela.distance_weights(df_presence, n_neighbors=-1, center=None)
-    df_background['SampleWeight'] = ela.distance_weights(df_background, n_neighbors=-1, center=None)
+    
+    df_presence.plot(alpha=0.1)
+    plt.savefig(os.path.join(metadata['model_savefig_path'],'presence.png'))
+    df_background.plot(alpha=0.1)
+    plt.savefig(os.path.join(metadata['model_savefig_path'],'background.png'))
+    
+    
+    if use_sample_weights:
+        print("Step 1: Computing sample weights for presence and background data....\n\n")
+        df_presence['SampleWeight'] = ela.distance_weights(df_presence, n_neighbors=-1, center=None)
+        df_background['SampleWeight'] = ela.distance_weights(df_background, n_neighbors=-1, center=None)
 
-    # Update metadata to include sample weight columns
-    metadata['base_cols']['presence'].append('SampleWeight')
-    metadata['base_cols']['background'].append('SampleWeight')
+        # Update metadata to include sample weight columns
+        metadata['base_cols']['presence'].append('SampleWeight')
+        metadata['base_cols']['background'].append('SampleWeight')
 
     if plot:
-        print("Step 2a: Plotting sample weights...\n\n")
-        plot_sample_weights(df_presence, df_background)
+        if use_sample_weights:
+            print("Step 2a: Plotting sample weights...\n\n")
+            plot_sample_weights(
+                df_presence,
+                df_background,
+                save_path=os.path.join(metadata['model_savefig_path'],'sample_weights.png')
+            )
         
-        print("Step 2b: Plotting presence data...\n\n")
+        print("Step 2b: Plotting distribution of presence data variables...\n\n")
         _ = df_presence.hist(figsize=(30,30), grid=False)
         plt.show()
+        plt.savefig(os.path.join(metadata['model_savefig_path'],'presence_feature_dist.png'))
         
-        print("Step 2c: Plotting background data...\n\n")
+        print("Step 2c: Plotting distribution of backgrounnd data variables...\n\n")
         _ = df_background.hist(figsize=(30,30), grid=False)
         plt.show()
+        plt.savefig(os.path.join(metadata['model_savefig_path'],'background_feature_dist.png'))
 
     # Merge datasets
     merged = ela.stack_geodataframes(df_presence, df_background)
@@ -58,25 +72,40 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
     # Separating LUH2 and Bioclim columns to perform dimensionality reduction
     if use_LUH2:
         df_LUH2 = merged[list(metadata['cols']['LUH2_renamed'].values())]
-    else:
+    else: 
         df_LUH2 = pd.DataFrame()
         
     print("Step 3: Removing highly correlated variables....\n\n")
     if not df_LUH2.empty:
-        df_LUH2_uncorr = remove_uncorrelated_columns(df_LUH2, threshold, plot=plot)
+        df_LUH2_uncorr = remove_uncorrelated_columns(
+            df_LUH2,
+            threshold,
+            save_path=metadata['model_savefig_path'],
+            tag='LUH2',
+            plot=plot
+        )
     else:
         df_LUH2_uncorr = pd.DataFrame()
 
 
     df_Bioclim = merged[list(metadata['cols']['bioclim_renamed'].values())]
-    df_Bioclim_uncorr = remove_uncorrelated_columns(df_Bioclim, threshold, plot=plot)
+    
+    df_Bioclim_uncorr = remove_uncorrelated_columns(
+        df_Bioclim,
+        threshold,
+        save_path=metadata['model_savefig_path'],
+        tag='Bioclim',
+        plot=plot
+    )
 
 
     print("Step 4: Combining selected variables and updating metadata....\n\n")
-    #columns_to_keep = ['crop_code', 'SampleWeight', 'label', 'geometry']
-    columns_to_keep = ['SampleWeight', 'label', 'geometry']
+
+    columns_to_keep = ['label', 'geometry']
     if use_crop:
         columns_to_keep.append('crop_code')
+    if use_sample_weights:
+        columns_to_keep.append('SampleWeight')
     
     df_list = [df_LUH2_uncorr, df_Bioclim_uncorr, merged[columns_to_keep]]
     df_merged_uncorr = pd.concat(df_list, axis=1)
@@ -85,12 +114,25 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
     
     # final check for CRS
     if df_merged_uncorr.crs.to_epsg() != 5070:
-        raise ValueError("df_merged_uncorr must be in CRS EPSG:5070 (USA Contiguous Albers Equal Area Conic projection). Please reproject your GeoDataFrame before proceeding.")
+        raise ValueError("df_merged_uncorr must be in CRS EPSG:5070 (USA Contiguous Albers Equal Area Conic projection). Please re-project your GeoDataFrame before proceeding.")
         
 
     print("Step 4a: Performing train-test split....\n\n")
     # Splitting data into train and test sets.
-    x_train, y_train, x_test, y_test, sample_weight_train, sample_weight_test, train_gdf, test_gdf = get_train_test_split(df_merged_uncorr, plot=plot)
+    if use_sample_weights:
+        x_train, y_train, x_test, y_test, sample_weight_train, sample_weight_test, train_gdf, test_gdf = get_train_test_split(
+            df_merged_uncorr,
+            use_sample_weights,
+            save_path=os.path.join(metadata['model_savefig_path'],'train_test_split.png'),
+            plot=plot
+        )
+    else:
+        x_train, y_train, x_test, y_test, train_gdf, test_gdf = get_train_test_split(
+            df_merged_uncorr,
+            save_path=os.path.join(metadata['model_savefig_path'],'train_test_split.png'),
+            plot=plot
+        )
+    
     metadata['col_used_in_train'] = x_train.columns.tolist()
     metadata['train_gdf'] = train_gdf
     metadata['test_gdf'] = test_gdf
@@ -129,10 +171,17 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
     if plot:
         # Optionally, display or plot the feature importance
         print("Feature importance calculated using permutation importance:\n", feature_importance)
-        feature_importance.sort_values(ascending=False).plot(kind='bar', title='Permutation Importance')
+        # Sort and prepare the data
+        feature_importance = feature_importance.sort_values(ascending=False)
+        # Plot with enhancements
+        plt.figure(figsize=(12, 6))  # Adjust figure size
+        feature_importance.plot(kind='bar', title='Permutation Importance')
         plt.ylabel('Mean Decrease in AUC')
+        plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels
+        plt.tight_layout()  # Adjust layout
+        plt.savefig(os.path.join(metadata['model_savefig_path'], 'feature_importance.png'))
         plt.show()
-    
+            
 
     print("Step 7: Predicting on test set and calculating AUC scores....\n\n")
     y_pred = maxent.predict(x_test)
@@ -140,9 +189,9 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
     metadata['y_pred_test'] = y_pred
     metadata['y_pred_train'] = y_pred_train
     
-    
     metadata["Unweighted_checkerboard_AUC_score_on_test"] = metrics.roc_auc_score(y_test, y_pred)
-    metadata["weighted_checkerboard_AUC_score_on_test"] = metrics.roc_auc_score(y_test, y_pred, sample_weight=sample_weight_test)
+    if use_sample_weights:
+        metadata["weighted_checkerboard_AUC_score_on_test"] = metrics.roc_auc_score(y_test, y_pred, sample_weight=sample_weight_test)
 
     print("Step 8a: Calculating continuous Boyce index for train sets....\n\n")
     CBI_train = continuous_boyce_index(
@@ -150,6 +199,8 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
         ypred=maxent.predict(x_train[y_train == 0]),  # prediction on background
         to_plot=plot
     )
+    plt.savefig(os.path.join(metadata['model_savefig_path'],'CBI_train.png'))
+    
 
     print("Step 8b: Calculating continuous Boyce index for test sets....\n\n")
     CBI_test = continuous_boyce_index(
@@ -157,6 +208,8 @@ def main(df_presence, df_background, metadata, threshold=0.9, plot=False, use_sa
         ypred=maxent.predict(x_test[y_test == 0]),  # prediction on background
         to_plot=plot
     )
+    plt.savefig(os.path.join(metadata['model_savefig_path'],'CBI_test.png'))
+
 
     metadata['CBI'] = {'train': CBI_train, 'test': CBI_test}
 
@@ -200,11 +253,12 @@ def future_projection(df, metadata):
 if __name__ == '__main__':
     
     insect_name = 'Brown_Marmorated_Stink_bug'
-    climate_source = 'CDS'
+    climate_source = 'WorldClim'
     avg = '1970_2000'
-    spatial_weight = 0.75
+    spatial_weight = 0.50
+    use_sample_weights = False
     use_LUH2 = False
-    use_crop = True
+    use_crop = False
     # Avg_periods = ['1970_2000']
     plot, save = True, True
 
@@ -234,10 +288,21 @@ if __name__ == '__main__':
             print(f"Directory {path} already exists.")
         
         metadata['model_metadata_path'] = path
+        metadata['model_savefig_path'] = path
         
         
 
-    experiment_states = main(presence, background, metadata, threshold=0.9, plot=plot, save=save, use_LUH2=use_LUH2, use_crop=use_crop)
+    experiment_states = main(
+        presence,
+        background,
+        metadata,
+        threshold=0.9,
+        plot=plot,
+        use_sample_weights=use_sample_weights,
+        save=save,
+        use_LUH2=use_LUH2,
+        use_crop=use_crop
+    )
     
     # Run future projections
     print('Running future projections over the US...\n\n\n\n\n')
@@ -250,9 +315,10 @@ if __name__ == '__main__':
         
         if plot:
             fig, ax = plt.subplots(figsize=(10, 8))
-            df_pred.plot(column='predictions', cmap='viridis', legend=True, ax=ax, alpha=0.25)
+            df_pred.plot(column='predictions', cmap='viridis', legend=True, ax=ax, alpha=0.1)
             ax.set_title("Prediction Map")
             plt.show()
+            plt.savefig(os.path.join(metadata['model_savefig_path'],f'future_projection_{dir}.png'))
 
         future_projections[dir] = df_pred
     
