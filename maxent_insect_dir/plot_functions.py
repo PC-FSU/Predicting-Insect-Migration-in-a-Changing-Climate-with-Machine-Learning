@@ -19,6 +19,7 @@ def plot_presence_background(presence, presence_thinned, background, plot=False,
         plt.show()
     if save_path:
         plt.savefig(save_path)
+    plt.close(fig)
 
 
 
@@ -44,6 +45,7 @@ def plot_presence_background_feature_histogram(presence, background, raster_name
         plt.show()
     if save_path:
         plt.savefig(save_path)
+    plt.close(fig)
     
 
 def plot_presence_background_feature_distribution(presence, background, raster_names, plot=False, save_path=False):
@@ -82,25 +84,26 @@ def plot_presence_background_feature_distribution(presence, background, raster_n
         plt.show()
     if save_path:
         plt.savefig(save_path)
-
+    plt.close(fig)
+    
     return ks_results
 
 
 def plot_correlation_matrix(corr_matrix, title, plot=False, save_path=False):
     """Function to plot the correlation matrix using seaborn heatmap"""
-    plt.figure(figsize=(10, 8))
+    fig = plt.figure(figsize=(10, 8))
     sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, square=True)
     plt.title(title)
     if plot:
         plt.show()
     if save_path:
         plt.savefig(save_path)
-
+    plt.close(fig)
 
 
 def plot_sample_weights(df_presence, df_background,  plot=False, save_path=False):
     
-    _, ax = plt.subplots(1,2,figsize=(15,3))
+    fig, ax = plt.subplots(1,2,figsize=(15,3))
     df_presence.plot(column='SampleWeight', legend=True, cmap='YlOrBr', ax=ax[0])
     df_background.plot(column='SampleWeight', legend=True, cmap='YlOrBr', ax=ax[1])
     
@@ -116,17 +119,28 @@ def plot_sample_weights(df_presence, df_background,  plot=False, save_path=False
         plt.show()
     if save_path:
         plt.savefig(save_path)
-        
+    plt.close(fig)
         
 def plot_train_test_split(train, test, plot=False, save_path=False):
     train['split'] = 'train'
     test['split'] = 'test'
+    
+    # Stack the geodataframes
     checker = ela.stack_geodataframes(train, test)
-    checker.plot(column='split', markersize=0.75, legend=True)
+    
+    # Create a new figure and axis
+    fig, ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size as needed
+    
+    # Plot the data
+    checker.plot(column='split', markersize=0.75, legend=True, ax=ax)
+    
     if plot:
         plt.show()
     if save_path:
         plt.savefig(save_path)
+    
+    plt.close(fig)  # Close the figure to prevent it from being displayed again
+
         
         
 
@@ -135,7 +149,7 @@ def plot_feature_importance(feature_importance, plot=False, save_path=False):
     # Sort and prepare the data
     feature_importance = feature_importance.sort_values(ascending=False)
 
-    plt.figure(figsize=(12, 6))  
+    fig = plt.figure(figsize=(12, 6))  
     feature_importance.plot(kind='bar', title='Permutation Importance')
     plt.ylabel('Mean Decrease in AUC')
     plt.xticks(rotation=45, ha='right')  
@@ -145,24 +159,26 @@ def plot_feature_importance(feature_importance, plot=False, save_path=False):
         plt.show()
     if save_path:
         plt.savefig(save_path)
-        
-        
+    plt.close(fig)    
+    
         
 
 
 def plot_projection(projection, tag, plot=False, save_path=False):
-    # plot the suitability predictions
+    # Plot the suitability predictions
     fig, ax = plt.subplots(1, 1, figsize=(10, 4), dpi=100)
-    plot = ax.imshow(projection, vmin=0, vmax=1, cmap='viridis')
+    img = ax.imshow(projection, vmin=0, vmax=1, cmap='viridis')
     ax.set_title(tag)
     ax.set_xticks([])
     ax.set_yticks([])
-    cbar = plt.colorbar(plot, ax=ax, label="relative occurrence probability", pad=0.04)
+    cbar = plt.colorbar(img, ax=ax, label="relative occurrence probability", pad=0.04)
     plt.tight_layout()
     if plot:
         plt.show()
     if save_path:
         plt.savefig(save_path)
+    plt.close(fig)
+
         
 
 
@@ -176,8 +192,8 @@ def plot_partial_dependency(model, x_train, cat_indices=None, plot=False, save_p
         plt.show()
     if save_path:
         plt.savefig(save_path)
-        
-        
+    plt.close(fig)    
+    
 
 def plot_current_future_feature_histogram(projections, raster_names, plot=False, save_path=False):
     ncols = 2
@@ -208,7 +224,8 @@ def plot_current_future_feature_histogram(projections, raster_names, plot=False,
         plt.show()
     if save_path:
         plt.savefig(save_path)
-
+    plt.close(fig)
+    
 
 def plot_current_future_feature_distribution(projections, raster_names, plot=False, save_path=False):
     ncols = 2
@@ -269,4 +286,31 @@ def plot_current_future_feature_distribution(projections, raster_names, plot=Fal
     if save_path:
         plt.savefig(save_path)
     
+    plt.close(fig)
+    
     return ks_results
+
+
+def plot_PE_curve(x, y, plot=False, save_path=False):
+    """
+    Plots the Predicted/Expected (P/E) curve for the Boyce Index.
+
+    Args:
+        x (array-like): Habitat suitability values (e.g., interval midpoints).
+        y (array-like): Predicted/Expected ratios corresponding to the habitat suitability intervals.
+
+    Returns:
+        None
+    """
+    fig = plt.figure()
+    plt.plot(x, y, marker="o")
+    plt.xlabel("Habitat suitability")
+    plt.ylabel("Predicted/Expected ratio")
+    plt.title("Boyce Index")
+    plt.tight_layout()
+    if plot:
+        plt.show()
+    if save_path:
+        plt.savefig(save_path)
+    plt.close(fig)
+    

@@ -116,22 +116,20 @@ def evaluate(model, x_test, y_test, x_train, y_train, cat_indices, sample_weight
     cbi_train = Continuous_boyce_index.continuous_boyce_index(
         yobs=model.predict(x_train[y_train == 1]),  # prediction on presence
         ypred=model.predict(x_train[y_train == 0]),  # prediction on background
-        to_plot=plot
+        to_plot=False
     )
-    if not isinstance(save_path, bool):
-        save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'cbi_train.png')
-        plt.savefig(save_path_)
+    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'cbi_train.png')
+    plot_functions.plot_PE_curve(x=np.mean(cbi_train['HS'], axis=1), y=cbi_train['F.ratio'], plot=plot, save_path=save_path_)
 
 
     cbi_test = Continuous_boyce_index.continuous_boyce_index(
         yobs=model.predict(x_test[y_test == 1]),  # prediction on presence
         ypred=model.predict(x_test[y_test == 0]),  # prediction on background
-        to_plot=plot
+        to_plot=False
     )
-    if not isinstance(save_path, bool):
-        save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'cbi_test.png')
-        plt.savefig(save_path_)
-        
+    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'cbi_test.png')
+    plot_functions.plot_PE_curve(x=np.mean(cbi_test['HS'], axis=1), y=cbi_test['F.ratio'], plot=plot, save_path=save_path_)
+    
     # get partial dependency plot
     save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'partial_dependency_plot.png')
     plot_functions.plot_partial_dependency(model, x_train, cat_indices, plot, save_path_)
@@ -156,7 +154,7 @@ def compute_projections(model, rasters, output_raster, tag, plot=False, save_pat
 if __name__ == '__main__':
     
     # Define the experiment main params
-    insect_name = 'Brown_Marmorated_Stink_bug'
+    insect_name = 'Root_Weevil'
     avg = '1970_2000'
     climate_source = 'WorldClim'
     Base_config = config.config_worldclim['avgs'] if climate_source == 'WorldClim' else config.config_CDS['avgs']
@@ -199,7 +197,7 @@ if __name__ == '__main__':
             'bias_uniform_mix_coeff': bias_uniform_mix_coeff,
             'background_count': 10000,
             'plot': False, # If this is false, nothing will be plotted.
-            'use_sample_weights': False,
+            'use_sample_weights': True,
             'base_cols': ['geometry', 'class', 'SampleWeight'],
             'threshold': 0.9,
             'cols_for_uncorrelated_cal': raster_names,  # Modify this in separate group and wrap them in list, modify the code too. 
