@@ -91,5 +91,7 @@ spatial_thinning_distance = {
     'Corn_Earworm' : 2000,
     'Large_Lady_Beetle' : 40000,
     'Brown_Marmorated_Stink_bug_2' : 30000,
-    'Root_Weevil' : 500
+    'Root_Weevil' : 5000
 }
+
+# 'Root_Weevil' : 500

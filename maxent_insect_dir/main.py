@@ -15,10 +15,10 @@ from maxent_insect_dir import plot_functions
 from maxent_insect_dir import Continuous_boyce_index
 
 
-def get_presence_background(insect_name, rasters, raster_names, bias_uniform_mix_coeff=0.75, background_count=10000, plot=False, save_path=False):
+def get_presence_background(insect_name, rasters, raster_names, to_thin=True, bias_uniform_mix_coeff=0.75, background_count=10000, plot=False, save_path=False):
 
     insect_source = config.Insect_list[insect_name]
-    thinning_distance = config.spatial_thinning_distance[insect_name]
+    thinning_distance = config.spatial_thinning_distance[insect_name] if to_thin else 0
     
     # read the presence data. 
     presence = gpd.read_file(insect_source)[['geometry']]
@@ -154,11 +154,13 @@ def compute_projections(model, rasters, output_raster, tag, plot=False, save_pat
 if __name__ == '__main__':
     
     # Define the experiment main params
-    insect_name = 'Root_Weevil'
+    insect_name = 'Large_Lady_Beetle'
     avg = '1970_2000'
     climate_source = 'WorldClim'
     Base_config = config.config_worldclim['avgs'] if climate_source == 'WorldClim' else config.config_CDS['avgs']
-
+    to_thin = True
+    use_sample_weights = False
+    
     raster_names = [
         'Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10',
         'Bio11', 'Bio12', 'Bio13', 'Bio14', 'Bio15', 'Bio16', 'Bio17', 'Bio18', 'Bio19'
@@ -181,7 +183,7 @@ if __name__ == '__main__':
     rasters_2100, mapping_2100 = utils.get_raster_mapping(Projection_2100, raster_names)
 
     
-    bias_uniform_mix_coeff_list = [0.0, 0.25, 0.5, 0.75, 0.95, 1.0]
+    bias_uniform_mix_coeff_list = [0.0, 0.25, 0.5, 0.75, 1.0]
     
     for bias_uniform_mix_coeff in bias_uniform_mix_coeff_list:
     
@@ -197,15 +199,16 @@ if __name__ == '__main__':
             'bias_uniform_mix_coeff': bias_uniform_mix_coeff,
             'background_count': 10000,
             'plot': False, # If this is false, nothing will be plotted.
-            'use_sample_weights': True,
+            'use_sample_weights': use_sample_weights,
             'base_cols': ['geometry', 'class', 'SampleWeight'],
             'threshold': 0.9,
             'cols_for_uncorrelated_cal': raster_names,  # Modify this in separate group and wrap them in list, modify the code too. 
-            'save_experiment_metadata': True
+            'save_experiment_metadata': True,
+            'to_thin': to_thin
         }
 
-        # if metadata['use_sample_weights'] == True:
-        #     metadata['base_cols'].append('SampleWeight')
+        if metadata['use_sample_weights'] == True:
+            metadata['base_cols'].append('SampleWeight')
 
 
         if metadata['save_experiment_metadata']:
@@ -233,6 +236,7 @@ if __name__ == '__main__':
             insect_name = metadata['insect_name'],
             rasters=train_data_rasters,
             raster_names=raster_names,
+            to_thin=metadata['to_thin'],
             bias_uniform_mix_coeff=metadata['bias_uniform_mix_coeff'],
             background_count=metadata['background_count'],
             plot=metadata['plot'],

@@ -15,10 +15,10 @@ def plot_presence_background(presence, presence_thinned, background, plot=False,
     ax[1].set_title('Presence spatially thinned')
     background.plot(ax=ax[2], alpha=0.1)
     ax[2].set_title('Background')
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     plt.close(fig)
 
 
@@ -41,10 +41,10 @@ def plot_presence_background_feature_histogram(presence, background, raster_name
     handles, lbls = ax.get_legend_handles_labels()
     fig.legend(handles, lbls, loc=(0.6, 0.9))
     plt.tight_layout()
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     plt.close(fig)
     
 
@@ -80,10 +80,10 @@ def plot_presence_background_feature_distribution(presence, background, raster_n
         ax.legend()
 
     plt.tight_layout()
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     plt.close(fig)
     
     return ks_results
@@ -94,10 +94,10 @@ def plot_correlation_matrix(corr_matrix, title, plot=False, save_path=False):
     fig = plt.figure(figsize=(10, 8))
     sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", cbar=True, square=True)
     plt.title(title)
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     plt.close(fig)
 
 
@@ -115,10 +115,10 @@ def plot_sample_weights(df_presence, df_background,  plot=False, save_path=False
     ax[1].set_ylabel("Latitude")
     ax[1].set_title('background sampleweight')
     
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     plt.close(fig)
         
 def plot_train_test_split(train, test, plot=False, save_path=False):
@@ -134,10 +134,10 @@ def plot_train_test_split(train, test, plot=False, save_path=False):
     # Plot the data
     checker.plot(column='split', markersize=0.75, legend=True, ax=ax)
     
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     
     plt.close(fig)  # Close the figure to prevent it from being displayed again
 
@@ -155,10 +155,10 @@ def plot_feature_importance(feature_importance, plot=False, save_path=False):
     plt.xticks(rotation=45, ha='right')  
     plt.tight_layout()
     
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     plt.close(fig)    
     
         
@@ -173,10 +173,10 @@ def plot_projection(projection, tag, plot=False, save_path=False):
     ax.set_yticks([])
     cbar = plt.colorbar(img, ax=ax, label="relative occurrence probability", pad=0.04)
     plt.tight_layout()
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     plt.close(fig)
 
         
@@ -188,10 +188,10 @@ def plot_partial_dependency(model, x_train, cat_indices=None, plot=False, save_p
     nrows = math.ceil(len(labels)/ncols)
 
     fig, ax = model.partial_dependence_plot(x_train, labels=labels, categorical_features = cat_indices,  dpi=100, figsize=(4*ncols,3*nrows))
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     plt.close(fig)    
     
 
@@ -220,10 +220,10 @@ def plot_current_future_feature_histogram(projections, raster_names, plot=False,
     handles, lbls = ax.get_legend_handles_labels()
     fig.legend(handles, lbls, loc=(0.6, 0.9))
     plt.tight_layout()
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     plt.close(fig)
     
 
@@ -281,10 +281,10 @@ def plot_current_future_feature_distribution(projections, raster_names, plot=Fal
         ks_results[name] = ks_stats
 
     plt.tight_layout()
-    if plot:
-        plt.show()
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
     
     plt.close(fig)
     
@@ -308,9 +308,11 @@ def plot_PE_curve(x, y, plot=False, save_path=False):
     plt.ylabel("Predicted/Expected ratio")
     plt.title("Boyce Index")
     plt.tight_layout()
-    if plot:
-        plt.show()
+    
     if save_path:
         plt.savefig(save_path)
+    if plot:
+        plt.show()
+
     plt.close(fig)
     
