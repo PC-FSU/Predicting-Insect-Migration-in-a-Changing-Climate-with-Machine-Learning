@@ -15,7 +15,7 @@ from maxent_insect_dir import plot_functions
 from maxent_insect_dir import Continuous_boyce_index
 
 
-def get_presence_background(insect_name, rasters, raster_names, to_thin=True, bias_uniform_mix_coeff=0.75, background_count=10000, plot=False, save_path=False):
+def get_presence_background(insect_name, rasters, to_thin=True, bias_uniform_mix_coeff=0.75, background_count=10000, plot=False, save_path=False):
 
     insect_source = config.Insect_list[insect_name]
     thinning_distance = config.spatial_thinning_distance[insect_name] if to_thin else 0
@@ -23,12 +23,10 @@ def get_presence_background(insect_name, rasters, raster_names, to_thin=True, bi
     # read the presence data. 
     presence = gpd.read_file(insect_source)[['geometry']]
     presence_thinned = utils.spatial_thinning(presence, thinning_distance)
-    presence_thinned = ela.annotate(presence_thinned, rasters, labels = raster_names, drop_na=True)
     presence_thinned['SampleWeight'] = ela.distance_weights(presence_thinned, n_neighbors=-1, center=None)
 
     # draw background point samples
     background = utils.spatial_weighted_background(presence=presence_thinned, uniform_raster=rasters[0], bias_uniform_mix_coeff=bias_uniform_mix_coeff, count=background_count)
-    background = ela.annotate(background, rasters, labels=raster_names, drop_na=True)
     background['SampleWeight'] = ela.distance_weights(background, n_neighbors=-1, center=None)
     
     print(f'Presence original : {presence.shape} | Presence spatially thinned : {presence_thinned.shape} | background : {background.shape}..\n' )
@@ -36,16 +34,29 @@ def get_presence_background(insect_name, rasters, raster_names, to_thin=True, bi
     
     save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'presence_background.png')
     plot_functions.plot_presence_background(presence, presence_thinned, background, plot, save_path_)
-    
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'presence_background_distribution.png')
-    ks_results = plot_functions.plot_presence_background_feature_distribution(presence_thinned, background, raster_names, plot, save_path_)
-    
+
     save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'sample_weight.png')
     plot_functions.plot_sample_weights(presence_thinned, background, plot, save_path_)
 
     assert np.all(np.sort(presence_thinned.columns.values) == np.sort(background.columns.values)), 'Different col in presence and absence'
     
-    return presence_thinned, background, ks_results
+    return presence_thinned, background
+
+
+def annotate_bioclim(presence, background, rasters, raster_names, plot=False, save_path=False):
+    presence = ela.annotate(presence, rasters, labels = raster_names, drop_na=True)
+    background = ela.annotate(background, rasters, labels=raster_names, drop_na=True)
+    
+    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'presence_background_distribution.png')
+    ks_results = plot_functions.plot_presence_background_feature_distribution(presence, background, raster_names, plot, save_path_)
+    
+    return presence, background, ks_results
+
+
+def annotate_elevation(presence, background, raster, raster_name='elevation'):
+    presence = ela.annotate(presence, raster, labels = raster_name, drop_na=True)
+    background = ela.annotate(background, raster, labels=raster_name, drop_na=True)
+    return presence, background
 
 
 def prepare_test_train(presence, background, base_cols, cols_for_uncorrelated_cal, use_sample_weights=True, threshold=0.9, plot=False, save_path=False):
@@ -149,39 +160,35 @@ def compute_projections(model, rasters, output_raster, tag, plot=False, save_pat
     plot_functions.plot_projection(pred, tag, plot, save_path_)
 
 
-
-
+def get_bioclim_rasters_paths(bioclim_paths):
+    
+    raster_names = [
+        'Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10',
+        'Bio11', 'Bio12', 'Bio13', 'Bio14', 'Bio15', 'Bio16', 'Bio17', 'Bio18', 'Bio19'
+    ]
+    rasters, raster_mapping = utils.get_raster_mapping(bioclim_paths, raster_names)
+    return rasters, raster_mapping, raster_names
+    
+    
 if __name__ == '__main__':
     
     # Define the experiment main params
     insect_name = 'Large_Lady_Beetle'
     avg = '1970_2000'
     climate_source = 'WorldClim'
-    Base_config = config.config_worldclim['avgs'] if climate_source == 'WorldClim' else config.config_CDS['avgs']
+    bioclim_config = config.config_worldclim['avgs'] if climate_source == 'WorldClim' else config.config_CDS['avgs']
     to_thin = True
     use_sample_weights = False
     
-    raster_names = [
-        'Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10',
-        'Bio11', 'Bio12', 'Bio13', 'Bio14', 'Bio15', 'Bio16', 'Bio17', 'Bio18', 'Bio19'
-    ]
+    # get bio-climatic data
+    train_data_rasters, train_raster_mapping, raster_names = get_bioclim_rasters_paths(bioclim_config[avg])
+    rasters_2040, mapping_2040, _ = get_bioclim_rasters_paths(bioclim_config['2021_2040'])
+    rasters_2060, mapping_2060, _ = get_bioclim_rasters_paths(bioclim_config['2041_2060'])
+    rasters_2080, mapping_2080, _ = get_bioclim_rasters_paths(bioclim_config['2061_2080'])
+    rasters_2100, mapping_2100, _ = get_bioclim_rasters_paths(bioclim_config['2081_2100'])
 
-    # laod raster for current, and future projection
-    bioclim_paths = Base_config[avg]
-    train_data_rasters, train_raster_mapping = utils.get_raster_mapping(bioclim_paths, raster_names)
 
-    Projection_2040 = Base_config['2021_2040']
-    rasters_2040, mapping_2040 = utils.get_raster_mapping(Projection_2040, raster_names)
-
-    Projection_2060 = Base_config['2041_2060']
-    rasters_2060, mapping_2060 = utils.get_raster_mapping(Projection_2060, raster_names)
-
-    Projection_2080 = Base_config['2061_2080']
-    rasters_2080, mapping_2080 = utils.get_raster_mapping(Projection_2080, raster_names)
-
-    Projection_2100 = Base_config['2081_2100']
-    rasters_2100, mapping_2100 = utils.get_raster_mapping(Projection_2100, raster_names)
-
+    # import sys; sys.exit()
     
     bias_uniform_mix_coeff_list = [0.0, 0.25, 0.5, 0.75, 1.0]
     
@@ -195,10 +202,10 @@ if __name__ == '__main__':
             'insect_name' : insect_name,
             'avg' : avg,
             'climate_source' : climate_source,
-            'bioclim_paths' : bioclim_paths,
+            'bioclim_paths' : bioclim_config[avg],
             'bias_uniform_mix_coeff': bias_uniform_mix_coeff,
             'background_count': 10000,
-            'plot': False, # If this is false, nothing will be plotted.
+            'plot': True, # If this is false, nothing will be plotted.
             'use_sample_weights': use_sample_weights,
             'base_cols': ['geometry', 'class', 'SampleWeight'],
             'threshold': 0.9,
@@ -232,10 +239,9 @@ if __name__ == '__main__':
 
         
         print('Step: get presence-background data...\n\n')
-        presence, background, ks_results = get_presence_background(
+        presence, background = get_presence_background(
             insect_name = metadata['insect_name'],
             rasters=train_data_rasters,
-            raster_names=raster_names,
             to_thin=metadata['to_thin'],
             bias_uniform_mix_coeff=metadata['bias_uniform_mix_coeff'],
             background_count=metadata['background_count'],
@@ -243,9 +249,22 @@ if __name__ == '__main__':
             save_path=metadata['model_savefig_path']
         )
 
+
+        print('Step: Annotate bioclim variable...\n\n')
+        presence, background, ks_results = annotate_bioclim(
+            presence=presence,
+            background=background,
+            rasters=train_data_rasters,
+            raster_names=raster_names,
+            plot=metadata['plot'],
+            save_path=metadata['model_savefig_path']
+        )
+        
         metadata['presence'] = presence
         metadata['background'] = background
         metadata['ks_results'] = ks_results
+        
+        
         
         
         print('Step: prepare test-train data...\n\n')
