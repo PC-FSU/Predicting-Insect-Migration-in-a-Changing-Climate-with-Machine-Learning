@@ -175,7 +175,7 @@ def get_bioclim_rasters_paths(bioclim_paths):
     return rasters, raster_mapping, raster_names
     
 
-def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevation_path=None):
+def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevation_raster_path=None):
     """
     Prepare datasets for climatic and elevation data.
 
@@ -183,44 +183,40 @@ def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevat
         bioclim_config (dict): Configuration for bioclimatic data paths by time period.
         avg (str): Key for average bioclimatic data in the configuration.
         use_elevation (bool): Whether to include elevation data.
-        elevation_path (str): Path to the elevation data.
+        elevation_raster_path (str): Path to the elevation data.
 
     Returns:
         dict: Organized data dictionary with climatic and elevation information.
     """
     # Define periods and data types
-    data_periods = ["2021_2040", "2041_2060", "2061_2080", "2081_2100"]
-    data_types = ["bioclim"]
+    data_periods = ["train" ,"2021_2040", "2041_2060", "2061_2080", "2081_2100"]
+    data_types = ["bioclim"] # each experiment will have the bioclimatic variables. Will add to this container if other data_types are required
+    raster_labels = {} #empty container which will save the label that will be used to assign label to value in df.
+    
     if use_elevation == True:
         data_types.append('elevation')
         
-    data = {period: {data_type: {} for data_type in data_types} for period in data_periods}
-    data["train"] = {data_type: {} for data_type in data_types}
+    data = {period: {data_type: {"rasters":None, "mapping":None} for data_type in data_types} for period in data_periods} # the mapping map raster_label:raster_path. This will be useful when evaluating future projections.
     
-    raster_labels = {}
-
     # Get bio-climatic data
-    data["train"]["bioclim"]["rasters"], data["train"]["bioclim"]["mapping"], raster_labels['bioclim'] = get_bioclim_rasters_paths(bioclim_config[avg])
     for period in data_periods:
-        data[period]["bioclim"]["rasters"], data[period]["bioclim"]["mapping"], _ = get_bioclim_rasters_paths(bioclim_config[period])
+        if period == "train":
+            data["train"]["bioclim"]["rasters"], data["train"]["bioclim"]["mapping"], raster_labels['bioclim'] = get_bioclim_rasters_paths(bioclim_config[avg])
+        else:
+            data[period]["bioclim"]["rasters"], data[period]["bioclim"]["mapping"], _ = get_bioclim_rasters_paths(bioclim_config[period])
 
     # Add elevation data if required
-    raster_labels['elevation'] = ['elevation']
     if use_elevation == True:
-        elevation_mapping = {"elevation": elevation_path}
-        # Add to train data
-        data["train"]["elevation"] = {
-            "rasters": elevation_path,
-            "mapping": elevation_mapping
-        }
-        # Add to all other periods
+        raster_labels['elevation'] = ['elevation']
+        elevation_mapping = {"elevation": elevation_raster_path}
         for period in data_periods:
             data[period]["elevation"] = {
-                "rasters": elevation_path,
+                "rasters": elevation_raster_path,
                 "mapping": elevation_mapping,
             }
-
+            
     return data, raster_labels
+
 
 def prepare_projection_metadata(projection_config, columns):
     # make sure the column are in right order as seen by model while training. 
@@ -244,13 +240,16 @@ if __name__ == '__main__':
     bioclim_config=config.config_worldclim['avgs'] if climate_source == 'WorldClim' else config.config_CDS['avgs']
     to_thin=True
     use_sample_weights=False
-    background_count=10000
-    plot=False
+    background_count=100
+    plot=True
     threshold=0.9
-    use_elevation=True
+    use_elevation=False
+    use_crop = True
     
     data, raster_labels = prepare_experiment_metadata(
-        bioclim_config, avg, use_elevation, elevation_path=config.PATH_TO_ELEVATION_DATA if use_elevation else None
+        bioclim_config, avg,
+        use_elevation=use_elevation,
+        elevation_raster_path=config.PATH_TO_ELEVATION_DATA if use_elevation else None
     )
     
     # bias_uniform_mix_coeff_list = [0.0, 0.25, 0.5, 0.75, 1.0]
