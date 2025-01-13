@@ -70,6 +70,10 @@ config_CDS = {
     'avgs': {}
 }
 
+# ---------------------------------------- Elevation data -----------------------------------------
+PATH_TO_ELEVATION_DATA = pathlib.Path('/data/Maxent/data/raw/Elevation/stanford-zz186ss2071-geotiff.tif')
+
+
 #---------------------------------------- raw data config -----------------------------------------
 
 

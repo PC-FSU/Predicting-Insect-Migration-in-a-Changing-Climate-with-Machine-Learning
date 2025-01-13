@@ -48,9 +48,21 @@ def plot_presence_background_feature_histogram(presence, background, raster_name
     plt.close(fig)
     
 
-def plot_presence_background_feature_distribution(presence, background, raster_names, plot=False, save_path=False):
+def plot_presence_background_feature_distribution(presence, background, labels, plot=False, save_path=False):
+    
+    # Check if 'geometry' column exists and drop it
+    if 'geometry' in presence.columns:
+        presence = presence.drop(columns=['geometry'])
+        
+    if 'geometry' in background.columns:
+        background = background.drop(columns=['geometry'])
+    
+    # Remove 'geometry' if it exists in the list
+    if 'geometry' in labels:
+        labels.remove('geometry')
+    
     ncols = 4
-    nrows = math.ceil(len(raster_names) / ncols)
+    nrows = math.ceil(len(labels) / ncols)
     pair_colors = ['blue', 'green']
     
     fig, axs = plt.subplots(nrows=nrows, ncols=ncols, figsize=(4 * ncols, 3 * nrows))
@@ -59,11 +71,11 @@ def plot_presence_background_feature_distribution(presence, background, raster_n
     ks_results = {}  # To store KS test results for each raster
 
     for idx, ax in enumerate(axs):
-        if idx >= len(raster_names):
+        if idx >= len(labels):
             ax.axis('off')  # Turn off any extra subplot
             continue
         
-        name = raster_names[idx]
+        name = labels[idx]
         pvar = presence[name]
         bvar = background[name]
 
