@@ -43,8 +43,8 @@ def get_presence_background(insect_name, uniform_raster, to_thin=True, bias_unif
     return presence_thinned, background
 
 
-def annotate_bioclim(presence, background, rasters, raster_names, plot=False, save_path=False):
-    presence = ela.annotate(presence, rasters, labels = raster_names, drop_na=True)
+def annotate_bioclim(presence, background, rasters, raster_names):
+    presence = ela.annotate(presence, rasters, labels=raster_names, drop_na=True)
     background = ela.annotate(background, rasters, labels=raster_names, drop_na=True)    
     return presence, background
 
@@ -52,6 +52,18 @@ def annotate_bioclim(presence, background, rasters, raster_names, plot=False, sa
 def annotate_elevation(presence, background, raster, raster_name='elevation'):
     presence = ela.annotate(presence, raster, labels=raster_name, drop_na=True)
     background = ela.annotate(background, raster, labels=raster_name, drop_na=True)
+    return presence, background
+
+def annotate_crop(presence, background, raster, raster_name='crop'):
+    presence = ela.annotate(presence, raster, labels=raster_name, drop_na=True)
+    background = ela.annotate(background, raster, labels=raster_name, drop_na=True)
+    return presence, background
+
+
+
+def annotate(presence, background, rasters, rasters_name):
+    presence = ela.annotate(presence, rasters, labels=rasters_name, drop_na=True)
+    background = ela.annotate(background, rasters, labels=rasters_name, drop_na=True)
     return presence, background
 
 
@@ -175,7 +187,7 @@ def get_bioclim_rasters_paths(bioclim_paths):
     return rasters, raster_mapping, raster_names
     
 
-def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevation_raster_path=None):
+def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevation_raster_path=None, use_crop=False, crop_raster_path=None):
     """
     Prepare datasets for climatic and elevation data.
 
@@ -184,6 +196,8 @@ def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevat
         avg (str): Key for average bioclimatic data in the configuration.
         use_elevation (bool): Whether to include elevation data.
         elevation_raster_path (str): Path to the elevation data.
+        use_crop (bool): Whether to include crop data.
+        crop_raster_path (str): Path to the crop data.
 
     Returns:
         dict: Organized data dictionary with climatic and elevation information.
@@ -195,6 +209,9 @@ def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevat
     
     if use_elevation == True:
         data_types.append('elevation')
+    
+    if use_crop==True:
+        data_types.append("crop")
         
     data = {period: {data_type: {"rasters":None, "mapping":None} for data_type in data_types} for period in data_periods} # the mapping map raster_label:raster_path. This will be useful when evaluating future projections.
     
@@ -214,7 +231,17 @@ def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevat
                 "rasters": elevation_raster_path,
                 "mapping": elevation_mapping,
             }
-            
+    
+    # Add crop data if required
+    if use_crop == True:
+        raster_labels['crop'] = ['crop']
+        crop_mapping = {'crop': crop_raster_path}
+        for period in data_periods:
+            data[period]["crop"] = {
+                "rasters": crop_raster_path,
+                "mapping": crop_mapping,
+            }
+    
     return data, raster_labels
 
 
@@ -234,22 +261,25 @@ def prepare_projection_metadata(projection_config, columns):
 if __name__ == '__main__':
     
     # Define the experiment main params
-    insect_name='Root_Weevil'
+    insect_name='Large_Lady_Beetle'
     avg='1970_2000'
     climate_source='WorldClim'
     bioclim_config=config.config_worldclim['avgs'] if climate_source == 'WorldClim' else config.config_CDS['avgs']
     to_thin=True
     use_sample_weights=False
-    background_count=100
+    background_count=10000
     plot=True
     threshold=0.9
-    use_elevation=False
-    use_crop = True
+    use_elevation=True
+    use_crop=True
     
     data, raster_labels = prepare_experiment_metadata(
-        bioclim_config, avg,
+        bioclim_config,
+        avg,
         use_elevation=use_elevation,
-        elevation_raster_path=config.PATH_TO_ELEVATION_DATA if use_elevation else None
+        elevation_raster_path=config.PATH_TO_ELEVATION_DATA if use_elevation else None,
+        use_crop=use_crop,
+        crop_raster_path=config.PATH_TO_MOST_GROWN_CROP if use_crop else None
     )
     
     # bias_uniform_mix_coeff_list = [0.0, 0.25, 0.5, 0.75, 1.0]
@@ -274,7 +304,9 @@ if __name__ == '__main__':
             'threshold':threshold,
             'cols_group_for_uncorrelated_calculations':[raster_labels['bioclim']],  # Modify this in separate group and wrap them in list, modify the code too. 
             'save_experiment_metadata':True,
-            'to_thin':to_thin
+            'to_thin':to_thin,
+            'use_elevation':use_elevation,
+            'use_crop':use_crop
         }
 
         if metadata['use_sample_weights'] == True:
@@ -312,24 +344,30 @@ if __name__ == '__main__':
         )
 
         print('Step: Annotate bioclim variable...\n\n')
-        presence, background = annotate_bioclim(
+        presence, background = annotate(
             presence=presence,
             background=background,
             rasters=data['train']['bioclim']['rasters'],
-            raster_names=raster_labels['bioclim'],
-            plot=metadata['plot'],
-            save_path=metadata['model_savefig_path']
+            rasters_name=raster_labels['bioclim']
         )
 
         if use_elevation:
             print('Step: Annotate elevation variable...\n\n')
-            presence, background = annotate_elevation(
+            presence, background = annotate(
                 presence=presence,
                 background=background,
-                raster=data['train']['elevation']['rasters'],
-                raster_name=raster_labels['elevation']
+                rasters=data['train']['elevation']['rasters'],
+                rasters_name=raster_labels['elevation']
             )
         
+        if use_crop:
+            print('Step: Annotate crop information...\n\n')
+            presence, background = annotate(
+                presence=presence,
+                background=background,
+                rasters=data['train']['crop']['rasters'],
+                rasters_name=raster_labels['crop']
+            )
 
         metadata['presence'] = presence
         metadata['background'] = background
@@ -338,8 +376,10 @@ if __name__ == '__main__':
         cols_to_keep = [metadata['base_cols']] 
         if use_elevation:
             cols_to_keep.append(raster_labels['elevation'])
+        if use_crop:
+            cols_to_keep.append(raster_labels['crop'])
             
-        tags = ['bioclim']  # update this if more data is added
+        tags = ['bioclim']  # Update this if more data is added. Note crop and elevation won't be used here. Something like LUH2/biolcim will be added here for correlation calculations.
         assert len(tags) == len(metadata['cols_group_for_uncorrelated_calculations']), 'you might be missing some col group'
         for tag, cols_group in zip(tags, metadata['cols_group_for_uncorrelated_calculations']):
             cols_to_keep.append(remove_correlated_columns(
@@ -388,12 +428,22 @@ if __name__ == '__main__':
             metadata['sample_weight_train'] = sample_weight_train
             metadata['sample_weight_test'] = sample_weight_test
         
+        print(x_train)
+        print(raster_labels)
         
         print('Step: Run the experiment...\n\n')
-        cat_indices = None
+        cat_indices = []
+
         if use_elevation:
-            cat_indices = [x_train.columns.get_loc(col) for col in raster_labels['elevation']]
-                        
+            col_ = raster_labels['elevation'][0]
+            cat_indices.append(x_train.columns.get_loc(col_))
+
+        if use_crop:
+            col_ = raster_labels['crop'][0]
+            cat_indices.append(x_train.columns.get_loc(col_))
+
+        
+        print(cat_indices)
         model = train_model(
             x_train,
             y_train,

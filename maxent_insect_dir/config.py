@@ -44,9 +44,8 @@ Insect_list = {
 
 #---------------------------------------- To config crop -----------------------------------------
 
-
 # Dictionary to store all path to the raster file for crop data
-All_crop_data = {year : pathlib.Path(os.path.join(CROP_DATA,f"{year}_30m_cdls",f"{year}_30m_cdls.tif",)) for year in range(2008,2024)}
+PATH_TO_MOST_GROWN_CROP = pathlib.Path("/data/Maxent/data/raw/crop_data/reproject_most_grown_crop_1_min.tif")
 
 # path to csv which contain the code:crop_name entries. 
 Crop_mapping_config = pathlib.Path("/data/Maxent/data/raw/crop_data/cdl_codes_names.csv")
