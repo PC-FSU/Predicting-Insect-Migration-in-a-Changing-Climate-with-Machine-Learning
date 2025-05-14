@@ -1,20 +1,45 @@
-import matplotlib.pyplot as plt
 import seaborn as sns
 import elapid as ela
 import math
 import rasterio as rio
-from scipy.stats import ks_2samp
+import numpy as np
+import config
+import geopandas as gpd
+import matplotlib.pyplot as plt
+plt.style.use('/home/pc19d/postdoc/MaxEnt_insect_dir/maxent_insect_dir/my_style.mplstyle')
 
+from scipy.stats import ks_2samp
+from sklearn.inspection import partial_dependence
 
 
 def plot_presence_background(presence, presence_thinned, background, plot=False, save_path=False):
+    
+    us_boundary = gpd.read_file(config.PATH_TO_US_BOUNDARY).to_crs(presence.crs)
+    
     fig, ax = plt.subplots(1,3, figsize=(15,5))
-    presence.plot(ax=ax[0], alpha=0.1)
+    
+    presence.plot(ax=ax[0], color='red', alpha=0.1)
+    us_boundary.plot(ax=ax[0], edgecolor='black', facecolor='none', linewidth=1)
     ax[0].set_title('Presence')
-    presence_thinned.plot(ax=ax[1], alpha=0.1)
+    ax[0].set_xticks([])
+    ax[0].set_yticks([])
+
+    
+    
+    presence_thinned.plot(ax=ax[1], color='red', alpha=0.1)
+    us_boundary.plot(ax=ax[1], edgecolor='black', facecolor='none', linewidth=1)
     ax[1].set_title('Presence spatially thinned')
-    background.plot(ax=ax[2], alpha=0.1)
+    ax[1].set_xticks([])
+    ax[1].set_yticks([])
+
+    
+    background.plot(ax=ax[2], color='red', alpha=0.1)
+    us_boundary.plot(ax=ax[2], edgecolor='black', facecolor='none', linewidth=1)
     ax[2].set_title('Background')
+    ax[2].set_xticks([])
+    ax[2].set_yticks([])
+
+    
     if save_path:
         plt.savefig(save_path)
     if plot:
@@ -113,45 +138,91 @@ def plot_correlation_matrix(corr_matrix, title, plot=False, save_path=False):
     plt.close(fig)
 
 
+
 def plot_sample_weights(df_presence, df_background,  plot=False, save_path=False):
     
+    us_boundary = gpd.read_file(config.PATH_TO_US_BOUNDARY).to_crs(df_presence.crs)
+
     fig, ax = plt.subplots(1,2,figsize=(15,3))
-    df_presence.plot(column='SampleWeight', legend=True, cmap='YlOrBr', ax=ax[0])
-    df_background.plot(column='SampleWeight', legend=True, cmap='YlOrBr', ax=ax[1])
+    
+    df_presence.plot(column='SampleWeight', legend=True, cmap='coolwarm', ax=ax[0])
+    us_boundary.plot(ax=ax[0], edgecolor='black', facecolor='none', linewidth=1)
+    
+    df_background.plot(column='SampleWeight', legend=True, cmap='coolwarm', ax=ax[1])
+    us_boundary.plot(ax=ax[1], edgecolor='black', facecolor='none', linewidth=1)
     
     ax[0].set_title('presence sampleweight')
-    ax[0].set_xlabel("Longitude")
-    ax[0].set_ylabel("Latitude")
+    # ax[0].set_xlabel("Longitude")
+    # ax[0].set_ylabel("Latitude")
+    ax[0].set_xticks([])
+    ax[0].set_yticks([])
 
-    ax[1].set_xlabel("Longitude")
-    ax[1].set_ylabel("Latitude")
+
+    # ax[1].set_xlabel("Longitude")
+    # ax[1].set_ylabel("Latitude")
     ax[1].set_title('background sampleweight')
+    ax[1].set_xticks([])
+    ax[1].set_yticks([])
     
     if save_path:
         plt.savefig(save_path)
     if plot:
         plt.show()
     plt.close(fig)
-        
-def plot_train_test_split(train, test, plot=False, save_path=False):
+    
+    
+from matplotlib.colors import ListedColormap
+
+def plot_train_test_split(train, test, plot=False, save_path=None):
+    train = train.copy()
+    test = test.copy()
     train['split'] = 'train'
-    test['split'] = 'test'
-    
-    # Stack the geodataframes
+    test['split']  = 'test'
+
+    us_boundary = gpd.read_file(config.PATH_TO_US_BOUNDARY).to_crs(train.crs)
     checker = ela.stack_geodataframes(train, test)
-    
-    # Create a new figure and axis
-    fig, ax = plt.subplots(figsize=(10, 6))  # Adjust the figure size as needed
-    
-    # Plot the data
-    checker.plot(column='split', markersize=0.75, legend=True, ax=ax)
-    
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Define color mapping
+    split_colors = {'train': 'red', 'test': 'green'}
+    categories = ['train', 'test']
+    color_list = [split_colors[cat] for cat in categories]
+    cmap = ListedColormap(color_list)
+
+    # Plot the data with the custom colormap
+    checker.plot(
+        column='split',
+        categorical=True,
+        cmap=cmap,
+        markersize=1,
+        legend=True,
+        legend_kwds={
+            'loc': 'lower left',
+            'title': 'Dataset',
+        },
+        ax=ax
+    )
+    us_boundary.plot(ax=ax, edgecolor='black', facecolor='none', linewidth=1)
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.axis('off')
+
+    # Customize the legend
+    legend = ax.get_legend()
+    if legend:
+        legend.set_frame_on(False)  # Remove legend box
+        legend.set_title('Dataset', prop={'size': 20})  # Set title font size
+        for text in legend.get_texts():
+            text.set_fontsize(20)  # Set label font size
+
     if save_path:
-        plt.savefig(save_path)
+        fig.savefig(save_path, bbox_inches='tight')
     if plot:
         plt.show()
-    
-    plt.close(fig)  # Close the figure to prevent it from being displayed again
+    plt.close(fig)
+
 
         
         
@@ -179,11 +250,14 @@ def plot_feature_importance(feature_importance, plot=False, save_path=False):
 def plot_projection(projection, tag, plot=False, save_path=False):
     # Plot the suitability predictions
     fig, ax = plt.subplots(1, 1, figsize=(10, 4), dpi=100)
-    img = ax.imshow(projection, vmin=0, vmax=1, cmap='viridis')
+    vmin = np.min(projection.ravel())
+    vmax = np.max(projection.ravel())
+    img = ax.imshow(projection, vmin=vmin, vmax=vmax, cmap='coolwarm')
     ax.set_title(tag)
     ax.set_xticks([])
     ax.set_yticks([])
-    cbar = plt.colorbar(img, ax=ax, label="relative occurrence probability", pad=0.04)
+    fig.colorbar(img, ax=ax, label="relative occurrence probability", pad=0.04)
+    
     plt.tight_layout()
     if save_path:
         plt.savefig(save_path)
@@ -191,20 +265,50 @@ def plot_projection(projection, tag, plot=False, save_path=False):
         plt.show()
     plt.close(fig)
 
-        
-
 
 def plot_partial_dependency(model, x_train, cat_indices=None, plot=False, save_path=False):
     labels = x_train.columns
     ncols = 4
-    nrows = math.ceil(len(labels)/ncols)
-
-    fig, ax = model.partial_dependence_plot(x_train, labels=labels, categorical_features = cat_indices,  dpi=100, figsize=(4*ncols,3*nrows))
+    nrows = math.ceil((len(labels)-len(cat_indices))/ncols)
+    percentiles=(0.025, 0.975)# lower and upper percentiles used to set the range to plot.
+    n_bins=100 # the number of bins spanning the lower-upper percentile range.
+    
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(4*ncols, 4*nrows), constrained_layout=True)
+    axes = axes.flatten()
+    
+    plot_axes_index = 0
+    for idx in range(len(labels)):
+        if idx in cat_indices:
+            continue
+        pd = partial_dependence(
+            model,
+            x_train,
+            [idx],
+            percentiles=percentiles,
+            grid_resolution=n_bins,
+            kind="individual",
+        )
+        mean = pd["individual"][0].mean(axis=0)
+        stdv = pd["individual"][0].std(axis=0)
+        bins = pd["grid_values"][0]
+        
+        axes[plot_axes_index].fill_between(bins, mean - stdv, mean + stdv, alpha=0.25)
+        axes[plot_axes_index].plot(bins, mean)
+        axes[plot_axes_index].set_title(labels[idx])
+        
+        plot_axes_index += 1
+        
+    
+    # Hide any unused axes
+    for i in range(plot_axes_index, len(axes)):
+        axes[i].axis('off')
+    
     if save_path:
         plt.savefig(save_path)
     if plot:
         plt.show()
-    plt.close(fig)    
+        
+    plt.close()
     
 
 def plot_current_future_feature_histogram(projections, raster_names, plot=False, save_path=False):

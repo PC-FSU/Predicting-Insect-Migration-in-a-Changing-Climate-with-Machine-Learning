@@ -4,7 +4,13 @@
 /reports/image
 /reports/Boyce_index.md 
 /reports/boyce_index.r
-/reports/track_results.md
+/reports/track_results.md/
+/maxent_insect_dir/feature_important_drift.py
+/maxent_insect_dir/feature_importance_drift.ipynb
+/maxent_insect_dir/Experiment_result.ipynb
+/maxent_insect_dir/postdoc.code-workspace
+/maxent_insect_dir/most_favroble_distrubution.ipynb
+/maxent_insect_dir/paper_visualization.ipynb
 
 # Mac OS-specific storage files
 .DS_Store

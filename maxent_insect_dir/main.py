@@ -4,7 +4,10 @@ import os
 import numpy as np
 import geopandas as gpd
 import rasterio as rio
+
 import matplotlib.pyplot as plt
+plt.style.use('/home/pc19d/postdoc/MaxEnt_insect_dir/maxent_insect_dir/my_style.mplstyle')
+
 import pathlib
 import joblib
 import itertools
@@ -31,11 +34,10 @@ def get_presence_background(insect_name, uniform_raster, to_thin=True, bias_unif
     
     print(f'Presence original : {presence.shape} | Presence spatially thinned : {presence_thinned.shape} | background : {background.shape}..\n' )
     
-    
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'presence_background.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, 'presence_background.png')
     plot_functions.plot_presence_background(presence, presence_thinned, background, plot, save_path_)
 
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'sample_weight.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, 'sample_weight.png')
     plot_functions.plot_sample_weights(presence_thinned, background, plot, save_path_)
 
     assert np.all(np.sort(presence_thinned.columns.values) == np.sort(background.columns.values)), 'Different col in presence and absence'
@@ -60,7 +62,6 @@ def annotate_crop(presence, background, raster, raster_name='crop'):
     return presence, background
 
 
-
 def annotate(presence, background, rasters, rasters_name):
     presence = ela.annotate(presence, rasters, labels=rasters_name, drop_na=True)
     background = ela.annotate(background, rasters, labels=rasters_name, drop_na=True)
@@ -76,10 +77,10 @@ def remove_correlated_columns(presence, background, cols_for_uncorrelated_cal, t
     df_uncorrelated = utils.remove_highly_correlated(merged[cols_for_uncorrelated_cal], threshold=threshold)
     corr_matrix_uncorrelated = df_uncorrelated.corr()
     
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, f'corr_matrix_{tag}_before.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, f'corr_matrix_{tag}_before.png')
     plot_functions.plot_correlation_matrix(corr_matrix, "Correlation Matrix Before Removing Highly Correlated Features", plot, save_path_)
     
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, f'corr_matrix_{tag}_after.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, f'corr_matrix_{tag}_after.png')
     plot_functions.plot_correlation_matrix(corr_matrix_uncorrelated, "Correlation Matrix After Removing Highly Correlated Features", plot, save_path_)    
     
     cols_to_keep = df_uncorrelated.columns
@@ -87,7 +88,7 @@ def remove_correlated_columns(presence, background, cols_for_uncorrelated_cal, t
     return cols_to_keep
 
 def get_ks(presence, background, labels, plot=False, save_path=False):
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'presence_background_distribution.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, 'presence_background_distribution.png')
     ks_results = plot_functions.plot_presence_background_feature_distribution(presence, background, labels, plot, save_path_)
     return ks_results
 
@@ -103,7 +104,7 @@ def prepare_test_train(presence, background, use_sample_weights=True, plot=False
     y_test = test['class']
 
     print(f'n_train : {x_train.shape} | n_test : {x_test.shape}...\n\n')
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'train_test_split.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, 'train_test_split.png')
     plot_functions.plot_train_test_split(train, test, plot, save_path_)
     
     result = {
@@ -120,9 +121,9 @@ def prepare_test_train(presence, background, use_sample_weights=True, plot=False
     return result
 
 
-def train_model(x_train, y_train, cat_indices=None, sample_weight_train=None):  
+def train_model(x_train, y_train, cat_indices=None, tau=0.5, sample_weight_train=None):  
     # train the model
-    model = ela.MaxentModel(transform='cloglog', beta_multiplier=2.0)
+    model = ela.MaxentModel(transform='cloglog', tau=tau, beta_multiplier=2.0)
     if sample_weight_train is not None:
         model.fit(x_train, y_train, sample_weight=sample_weight_train, categorical=cat_indices)
     else:
@@ -134,7 +135,7 @@ def train_model(x_train, y_train, cat_indices=None, sample_weight_train=None):
 def evaluate(model, x_test, y_test, x_train, y_train, cat_indices, sample_weight_test=None, plot=False, save_path=False):
     # get feature importance
     feature_importance = utils.get_feature_importance(model, x_test, y_test)
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'feature_importance.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, 'feature_importance.png')
     plot_functions.plot_feature_importance(feature_importance,  plot, save_path_)
     
     # get auc score
@@ -146,20 +147,20 @@ def evaluate(model, x_test, y_test, x_train, y_train, cat_indices, sample_weight
         ypred=model.predict(x_train[y_train == 0]),  # prediction on background
         to_plot=False
     )
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'cbi_train.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, 'cbi_train.png')
     plot_functions.plot_PE_curve(x=np.mean(cbi_train['HS'], axis=1), y=cbi_train['F.ratio'], plot=plot, save_path=save_path_)
-
 
     cbi_test = Continuous_boyce_index.continuous_boyce_index(
         yobs=model.predict(x_test[y_test == 1]),  # prediction on presence
         ypred=model.predict(x_test[y_test == 0]),  # prediction on background
         to_plot=False
     )
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'cbi_test.png')
+    
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, 'cbi_test.png')
     plot_functions.plot_PE_curve(x=np.mean(cbi_test['HS'], axis=1), y=cbi_test['F.ratio'], plot=plot, save_path=save_path_)
     
     # get partial dependency plot
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, 'partial_dependency_plot.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, 'partial_dependency_plot.png')
     plot_functions.plot_partial_dependency(model, x_train, cat_indices, plot, save_path_)
 
     return feature_importance, auc, cbi_train, cbi_test
@@ -173,7 +174,7 @@ def compute_projections(model, rasters, output_raster, tag, plot=False, save_pat
     with rio.open(output_raster, 'r') as src:
         pred = src.read(1, masked=True)
 
-    save_path_ = save_path if isinstance(save_path, bool) else os.path.join(save_path, f'projection_{tag}.png')
+    save_path_ = save_path if isinstance(save_path, (bool, type(None))) else os.path.join(save_path, f'projection_{tag}.png')
     plot_functions.plot_projection(pred, tag, plot, save_path_)
 
 
@@ -261,17 +262,19 @@ def prepare_projection_metadata(projection_config, columns):
 if __name__ == '__main__':
     
     # Define the experiment main params
-    insect_name='Large_Lady_Beetle'
+    insect_name='Spooted_Lanternfly'
+    tau=config.tau[insect_name]
     avg='1970_2000'
     climate_source='WorldClim'
     bioclim_config=config.config_worldclim['avgs'] if climate_source == 'WorldClim' else config.config_CDS['avgs']
     to_thin=True
     use_sample_weights=False
     background_count=10000
-    plot=True
+    plot=False
     threshold=0.9
     use_elevation=True
-    use_crop=True
+    use_crop=False
+    save_experiment_metadata=True
     
     data, raster_labels = prepare_experiment_metadata(
         bioclim_config,
@@ -283,7 +286,7 @@ if __name__ == '__main__':
     )
     
     # bias_uniform_mix_coeff_list = [0.0, 0.25, 0.5, 0.75, 1.0]
-    bias_uniform_mix_coeff_list = [0.25, 0.75]
+    bias_uniform_mix_coeff_list = [0, 0.25, 0.5, 0.75, 1.0] #[0.25, 0.75]
     
     for bias_uniform_mix_coeff in bias_uniform_mix_coeff_list:
     
@@ -294,6 +297,7 @@ if __name__ == '__main__':
         metadata = {
             'insect_name':insect_name,
             'avg':avg,
+            'tau':tau,
             'climate_source':climate_source,
             'bioclim_paths':bioclim_config[avg],
             'bias_uniform_mix_coeff':bias_uniform_mix_coeff,
@@ -303,10 +307,12 @@ if __name__ == '__main__':
             'base_cols':['geometry', 'SampleWeight'],
             'threshold':threshold,
             'cols_group_for_uncorrelated_calculations':[raster_labels['bioclim']],  # Modify this in separate group and wrap them in list, modify the code too. 
-            'save_experiment_metadata':True,
+            'save_experiment_metadata':save_experiment_metadata,
             'to_thin':to_thin,
             'use_elevation':use_elevation,
-            'use_crop':use_crop
+            'use_crop':use_crop,
+            'model_savefig_path':None,
+            'model_metadata_path':None
         }
 
         if metadata['use_sample_weights'] == True:
@@ -328,8 +334,8 @@ if __name__ == '__main__':
             else:
                 print(f"Directory {path} already exists.")
             
-            metadata['model_metadata_path'] = path
-            metadata['model_savefig_path'] = path # just keeping that so its easy to understand.
+            metadata['model_metadata_path']=path
+            metadata['model_savefig_path']=path # just keeping that so its easy to understand.
 
         
         print('Step: get presence-background data...\n\n')
@@ -448,6 +454,7 @@ if __name__ == '__main__':
             x_train,
             y_train,
             cat_indices=cat_indices,
+            tau=tau,
             sample_weight_train=metadata['sample_weight_train'] if metadata['use_sample_weights'] else None
         )
         metadata['model'] = model
@@ -482,12 +489,11 @@ if __name__ == '__main__':
             '2100': '2081_2100',
         }
 
-
         # Generate projections dynamically
         projections = {
             time: {
                 'rasters': prepare_projection_metadata(data[time_range], metadata['x_train'].columns),
-                'output_raster': os.path.join(metadata['model_metadata_path'], f'{time}.tif')
+                'output_raster': os.path.join(metadata['model_metadata_path'], f'{time}.tif') if isinstance(metadata['model_metadata_path'], pathlib.Path) else pathlib.Path(f'{time}.tif')
             }
             for time, time_range in time_ranges.items()
         }
