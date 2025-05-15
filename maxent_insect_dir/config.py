@@ -27,7 +27,7 @@ PATH_TO_US_BOUNDARY = pathlib.Path("/data/Maxent/data/data/US_shapefile/US_shape
 
 
 # Path to test data
-PATH_TO_TEST_DATA = pathlib.Path('/data/Maxent/data/data/Test_data/test.gpkg')
+PATH_TO_TEST_DATA = pathlib.Path('/data/Maxent/data/data/Test_data/test_dummy.gpkg')
 
 
 #---------------------------------------- To config insects -----------------------------------------
