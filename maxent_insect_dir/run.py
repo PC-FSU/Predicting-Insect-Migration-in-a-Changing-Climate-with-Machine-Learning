@@ -5,7 +5,7 @@ import itertools
 from datetime import datetime
 import joblib
 import geopandas as gpd
-from maxent_insect_dir import config, prepare_metadata, plot_functions, main
+from maxent_insect_dir import config, prepare_metadata, run_utils
 from maxent_insect_dir.utils import remove_highly_correlated
 from sklearn import metrics
 import elapid as ela
@@ -32,7 +32,7 @@ def create_output_directory(metadata):
 def process_presence_background(metadata, data):
     """Process presence and background data."""
     print('Step: get presence-background data...\n\n')
-    presence, background = main.get_presence_background(
+    presence, background = run_utils.get_presence_background(
         insect_name=metadata['insect_name'],
         uniform_raster=data['train']['bioclim']['rasters'][0],
         to_thin=metadata['to_thin'],
@@ -47,13 +47,13 @@ def process_presence_background(metadata, data):
 def annotate_data(metadata, presence, background, data, raster_labels):
     """Annotate presence and background data."""
     print('Step: Annotate bioclim variable...\n\n')
-    presence = main.annotate(
+    presence = run_utils.annotate(
         points=presence,
         rasters=data['train']['bioclim']['rasters'],
         labels=raster_labels['bioclim']
     )
     
-    background = main.annotate(
+    background = run_utils.annotate(
         points=background,
         rasters=data['train']['bioclim']['rasters'],
         labels=raster_labels['bioclim']
@@ -62,12 +62,12 @@ def annotate_data(metadata, presence, background, data, raster_labels):
 
     if metadata['use_elevation']:
         print('Step: Annotate elevation variable...\n\n')
-        presence = main.annotate(
+        presence = run_utils.annotate(
             points=presence,
             rasters=data['train']['elevation']['rasters'],
             labels=raster_labels['elevation']
         )
-        background = main.annotate(
+        background = run_utils.annotate(
             points=background,
             rasters=data['train']['elevation']['rasters'],
             labels=raster_labels['elevation']
@@ -75,12 +75,12 @@ def annotate_data(metadata, presence, background, data, raster_labels):
 
     if metadata['use_crop']:
         print('Step: Annotate crop information...\n\n')
-        presence = main.annotate(
+        presence = run_utils.annotate(
             points=presence,
             rasters=data['train']['crop']['rasters'],
             labels=raster_labels['crop']
         )
-        background = main.annotate(
+        background = run_utils.annotate(
             points=background,
             rasters=data['train']['crop']['rasters'],
             labels=raster_labels['crop']
@@ -91,11 +91,11 @@ def annotate_data(metadata, presence, background, data, raster_labels):
 def prepare_test_data(metadata, data, raster_labels):
     """Prepare test data."""
     test = gpd.read_file(config.PATH_TO_TEST_DATA)[['geometry']]
-    test = main.annotate(test, data['train']['bioclim']['rasters'], labels=raster_labels['bioclim'], drop_na=True)
+    test = run_utils.annotate(test, data['train']['bioclim']['rasters'], labels=raster_labels['bioclim'], drop_na=True)
     if metadata['use_elevation']:
-        test = main.annotate(test, data['train']['elevation']['rasters'], labels=['elevation'], drop_na=True)
+        test = run_utils.annotate(test, data['train']['elevation']['rasters'], labels=['elevation'], drop_na=True)
     if metadata['use_crop']:
-        test = main.annotate(test, data['train']['crop']['rasters'], labels=['crop'], drop_na=True)
+        test = run_utils.annotate(test, data['train']['crop']['rasters'], labels=['crop'], drop_na=True)
     return test
 
 
@@ -109,7 +109,7 @@ def remove_correlated_features(metadata, presence, background, raster_labels):
 
     tags = ['bioclim']
     for tag, cols_group in zip(tags, metadata['cols_group_for_uncorrelated_calculations']):
-        cols_to_keep.append(main.remove_correlated_columns(
+        cols_to_keep.append(run_utils.remove_correlated_columns(
             presence=presence,
             background=background,
             cols_for_uncorrelated_cal=cols_group,
@@ -132,7 +132,7 @@ def remove_correlated_features(metadata, presence, background, raster_labels):
 def prepare_train_test_split(metadata, presence, background, test):
     """Prepare train-test split."""
     print('Step: prepare test-train data...\n\n')
-    result = main.prepare_test_train(
+    result = run_utils.prepare_test_train(
         presence=presence,
         train_background=background,
         test_background=test,
@@ -157,7 +157,7 @@ def train_and_evaluate_model(metadata, raster_labels):
         cat_indices.append(metadata['x_train'].columns.get_loc(col_))
 
     print(cat_indices)
-    model = main.train_model(
+    model = run_utils.train_model(
         metadata['x_train'],
         metadata['y_train'],
         cat_indices=cat_indices,
@@ -166,7 +166,7 @@ def train_and_evaluate_model(metadata, raster_labels):
     metadata['model'] = model
 
     print('Step: evaluate the performance metrics...\n\n')
-    feature_importance, auc, cbi_train, cbi_test = main.evaluate(
+    feature_importance, auc, cbi_train, cbi_test = run_utils.evaluate(
         model=metadata['model'],
         x_test=metadata['x_test'],
         y_test=metadata['y_test'],
@@ -204,7 +204,7 @@ def generate_projections(metadata, data, raster_labels):
     }
 
     for key, val in projections.items():
-        main.compute_projections(
+        run_utils.compute_projections(
             model=metadata['model'],
             rasters=list(val['rasters'].values()),
             output_raster=val['output_raster'],

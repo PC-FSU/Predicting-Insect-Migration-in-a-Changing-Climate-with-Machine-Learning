@@ -10,6 +10,7 @@ plt.style.use('/home/pc19d/postdoc/MaxEnt_insect_dir/maxent_insect_dir/my_style.
 
 from scipy.stats import ks_2samp
 from sklearn.inspection import partial_dependence
+from matplotlib.colors import ListedColormap
 
 
 def plot_presence_background(presence, presence_thinned, background, plot=False, save_path=False):
@@ -171,7 +172,7 @@ def plot_sample_weights(df_presence, df_background,  plot=False, save_path=False
     plt.close(fig)
     
     
-from matplotlib.colors import ListedColormap
+
 
 def plot_train_test_split(train, test, plot=False, save_path=None):
     train = train.copy()

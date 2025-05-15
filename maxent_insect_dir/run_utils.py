@@ -104,7 +104,10 @@ def prepare_test_train(presence, train_background, test_background, plot=False, 
 
     save_path_ = resolve_save_path(save_path, 'presence_train_test_split.png')
     plot_functions.plot_train_test_split(train_presence, test_presence, plot, save_path_)
-
+    
+    save_path_ = resolve_save_path(save_path, 'background_train_test_split.png')
+    plot_functions.plot_train_test_split(train_background, test_background, plot, save_path_)
+    
     return {
         "x_train": x_train,
         "y_train": y_train,
