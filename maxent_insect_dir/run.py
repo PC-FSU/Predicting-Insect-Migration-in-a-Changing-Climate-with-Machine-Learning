@@ -18,6 +18,9 @@ def create_output_directory(metadata):
     path = pathlib.Path(
         os.path.join(
             config.PATH_TO_SAVE_RESULTS,
+            metadata['pathway'],
+            metadata['insect_name'],
+            str(metadata['bias_uniform_mix_coeff']),
             f"{metadata['insect_name']}_{metadata['avg']}_{metadata['climate_source']}_bias_uniform_max_coeff_{metadata['bias_uniform_mix_coeff']}_{timestamp}"
         )
     )
@@ -52,7 +55,6 @@ def annotate_data(metadata, presence, background, data, raster_labels):
         rasters=data['train']['bioclim']['rasters'],
         labels=raster_labels['bioclim']
     )
-    
     background = run_utils.annotate(
         points=background,
         rasters=data['train']['bioclim']['rasters'],
@@ -125,8 +127,16 @@ def remove_correlated_features(metadata, presence, background, raster_labels):
 
     assert list(presence.columns) == list(background.columns) == list(cols_to_keep), \
         'Check the sequence of columns in presence, background, and cols_to_keep'
+    
+    metadata['ks_results'] = run_utils.get_ks(
+        presence=presence,
+        background=background,
+        labels=cols_to_keep,
+        plot=metadata['plot'],
+        save_path=metadata['model_savefig_path']
+    )
 
-    return presence, background, cols_to_keep
+    return metadata, presence, background, cols_to_keep
 
 
 def prepare_train_test_split(metadata, presence, background, test):
@@ -164,7 +174,7 @@ def train_and_evaluate_model(metadata, raster_labels):
         tau=metadata['tau']
     )
     metadata['model'] = model
-
+    
     print('Step: evaluate the performance metrics...\n\n')
     feature_importance, auc, cbi_train, cbi_test = run_utils.evaluate(
         model=metadata['model'],
@@ -223,50 +233,63 @@ def save_metadata(metadata):
 
 # Main Workflow
 if __name__ == '__main__':
-    # Define experiment parameters
-    metadata = {
-            'insect_name': 'Spooted_Lanternfly',
-            'avg': '1970_2000',
-            'climate_source': 'WorldClim',
-            'background_count': 300,
-            'plot': True,
-            'base_cols': ['geometry'],
-            'threshold': 0.9,
-            'save_experiment_metadata': True,
-            'to_thin': True,
-            'use_elevation': True,
-            'use_crop': False,
-            'model_savefig_path': None,
-            'model_metadata_path': None
-        }
     
-    
+    patways = ['SSP_126', 'SSP_370', 'SSP_585']
+    insect_names = ['Brown_Marmorated_Stink_bug', 'Corn_Earworm', 'Root_Weevil', 'Spongy_Moth', 'Spooted_Lanternfly']
 
-    data, raster_labels = prepare_metadata.prepare_experiment_metadata(
-        config.config_worldclim['avgs'] if metadata['climate_source'] == 'WorldClim' else config.config_CDS['avgs'],
-        metadata['avg'],
-        use_elevation=metadata['use_elevation'],
-        elevation_raster_path=config.PATH_TO_ELEVATION_DATA if metadata['use_elevation'] else None,
-        use_crop=metadata['use_crop'],
-        crop_raster_path=config.PATH_TO_MOST_GROWN_CROP if metadata['use_crop'] else None
-    )
+    for pathway in patways:    
+        for i in range(20):
+            for name in insect_names:
+                # Define experiment parameters
+                metadata = {
+                        'insect_name': name,
+                        'avg': '1970_2000',
+                        'pathway': pathway,
+                        'climate_source': 'WorldClim',
+                        'background_count': 10000,
+                        'plot': False,
+                        'base_cols': ['geometry'],
+                        'threshold': 0.9,
+                        'save_experiment_metadata': True,
+                        'to_thin': True,
+                        'use_elevation': True,
+                        'use_crop': False,
+                        'model_savefig_path': None,
+                        'model_metadata_path': None
+                    }
+                
+                
+                data, raster_labels = prepare_metadata.prepare_experiment_metadata(
+                    config.config_worldclim[metadata['pathway']] if metadata['climate_source'] == 'WorldClim' else config.config_CDS['avgs'],
+                    metadata['avg'],
+                    use_elevation=metadata['use_elevation'],
+                    elevation_raster_path=config.PATH_TO_ELEVATION_DATA if metadata['use_elevation'] else None,
+                    use_crop=metadata['use_crop'],
+                    crop_raster_path=config.PATH_TO_MOST_GROWN_CROP if metadata['use_crop'] else None
+                )
+                
+                
 
-    bias_uniform_mix_coeff_list = [0, 0.25, 0.5, 0.75, 1.0]
-
-    for bias_uniform_mix_coeff in bias_uniform_mix_coeff_list:
-        metadata['tau'] = config.tau[metadata['insect_name']]
-        metadata['bias_uniform_mix_coeff'] = bias_uniform_mix_coeff
-        metadata['cols_group_for_uncorrelated_calculations'] = [raster_labels['bioclim']]
-        metadata['model_metadata_path'] = create_output_directory(metadata)
-        metadata['model_savefig_path'] = metadata['model_metadata_path']
-
-        presence, background = process_presence_background(metadata, data)
-        presence, background = annotate_data(metadata, presence, background, data, raster_labels)
-        test = prepare_test_data(metadata, data, raster_labels)
-        presence, background, cols_to_keep = remove_correlated_features(metadata, presence, background, raster_labels)
-        metadata = prepare_train_test_split(metadata, presence, background, test)
-        metadata = train_and_evaluate_model(metadata, raster_labels)
-        generate_projections(metadata, data, raster_labels)
-        save_metadata(metadata)
+                bias_uniform_mix_coeff_list = [0, 0.25, 0.5, 0.75, 1.0]
 
 
+                for bias_uniform_mix_coeff in bias_uniform_mix_coeff_list:
+                    metadata['tau'] = config.tau[metadata['insect_name']]
+                    metadata['bias_uniform_mix_coeff'] = bias_uniform_mix_coeff
+                    metadata['cols_group_for_uncorrelated_calculations'] = [raster_labels['bioclim']]
+                    metadata['model_metadata_path'] = create_output_directory(metadata)
+                    metadata['model_savefig_path'] = metadata['model_metadata_path']
+
+                    presence, background = process_presence_background(metadata, data)
+                    presence, background = annotate_data(metadata, presence, background, data, raster_labels)
+                    metadata['presence'] = presence
+                    metadata['background'] = background
+                    test = prepare_test_data(metadata, data, raster_labels)
+                    metadata['test'] = test
+                    metadata, presence, background, cols_to_keep = remove_correlated_features(metadata, presence, background, raster_labels)
+                    metadata['cols_to_keep'] = cols_to_keep
+                    metadata = prepare_train_test_split(metadata, presence, background, test)
+                    metadata = train_and_evaluate_model(metadata, raster_labels)
+                    generate_projections(metadata, data, raster_labels)
+                    save_metadata(metadata)
+                    

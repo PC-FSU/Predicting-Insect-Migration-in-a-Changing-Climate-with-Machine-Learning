@@ -27,7 +27,7 @@ PATH_TO_US_BOUNDARY = pathlib.Path("/data/Maxent/data/data/US_shapefile/US_shape
 
 
 # Path to test data
-PATH_TO_TEST_DATA = pathlib.Path('/data/Maxent/data/data/Test_data/test_dummy.gpkg')
+PATH_TO_TEST_DATA = pathlib.Path('/data/Maxent/data/data/Test_data/test.gpkg')
 
 
 #---------------------------------------- To config insects -----------------------------------------
@@ -56,10 +56,10 @@ Insect_list = {
 #---------------------------------------- To config crop -----------------------------------------
 
 # Dictionary to store all path to the raster file for crop data
-PATH_TO_MOST_GROWN_CROP = pathlib.Path("/data/Maxent/data/raw/crop_data/reproject_most_grown_crop_1_min.tif")
+PATH_TO_MOST_GROWN_CROP = pathlib.Path("/data/Maxent/data/data/crop_data/reproject_most_grown_crop_1_min.tif")
 
 # path to csv which contain the code:crop_name entries. 
-Crop_mapping_config = pathlib.Path("/data/Maxent/data/raw/crop_data/cdl_codes_names.csv")
+Crop_mapping_config = pathlib.Path("/data/Maxent/data/data/crop_data/cdl_codes_names.csv")
 
 
 # Crop code like by each insect. These code are selected in a way that it represent the 90% of insect observation are associated with these crops.
@@ -73,13 +73,40 @@ dominant_crop_by_insect = {
 #---------------------------------------- To config climate -----------------------------------------
 
 config_worldclim = {
-    'avgs': {
+    'SSP_126': {
         '1970_2000': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_1970_2000/wc2.1_10m_bio/Clipped/In_tiff_format'),
         '1990_2021': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_1990_2021/Clipped/In_tiff_format'), # not using this time average, as this is computed by me. Only using avg from bioclim.
-        '2021_2040': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_2021_2040/Clipped/In_tiff_format'),
-        '2041_2060': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_2041_2060/Clipped/In_tiff_format'),
-        '2061_2080': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_2061_2080/Clipped/In_tiff_format'),
-        '2081_2100': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_2081_2100/Clipped/In_tiff_format')
+        '2021_2040': pathlib.Path('/data/Maxent/data/data/SSP_126/Bioclim_worldclim_average_2021_2040/Clipped/In_tiff_format'),
+        '2041_2060': pathlib.Path('/data/Maxent/data/data/SSP_126/Bioclim_worldclim_average_2041_2060/Clipped/In_tiff_format'),
+        '2061_2080': pathlib.Path('/data/Maxent/data/data/SSP_126/Bioclim_worldclim_average_2061_2080/Clipped/In_tiff_format'),
+        '2081_2100': pathlib.Path('/data/Maxent/data/data/SSP_126/Bioclim_worldclim_average_2081_2100/Clipped/In_tiff_format')
+    },
+    
+    'SSP_245': {
+        '1970_2000': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_1970_2000/wc2.1_10m_bio/Clipped/In_tiff_format'),
+        '1990_2021': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_1990_2021/Clipped/In_tiff_format'), # not using this time average, as this is computed by me. Only using avg from bioclim.
+        '2021_2040': pathlib.Path('/data/Maxent/data/data/SSP_245/Bioclim_worldclim_average_2021_2040/Clipped/In_tiff_format'),
+        '2041_2060': pathlib.Path('/data/Maxent/data/data/SSP_245/Bioclim_worldclim_average_2041_2060/Clipped/In_tiff_format'),
+        '2061_2080': pathlib.Path('/data/Maxent/data/data/SSP_245/Bioclim_worldclim_average_2061_2080/Clipped/In_tiff_format'),
+        '2081_2100': pathlib.Path('/data/Maxent/data/data/SSP_245/Bioclim_worldclim_average_2081_2100/Clipped/In_tiff_format')
+    },
+    
+    'SSP_370': {
+        '1970_2000': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_1970_2000/wc2.1_10m_bio/Clipped/In_tiff_format'),
+        '1990_2021': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_1990_2021/Clipped/In_tiff_format'), # not using this time average, as this is computed by me. Only using avg from bioclim.
+        '2021_2040': pathlib.Path('/data/Maxent/data/data/SSP_370/Bioclim_worldclim_average_2021_2040/Clipped/In_tiff_format'),
+        '2041_2060': pathlib.Path('/data/Maxent/data/data/SSP_370/Bioclim_worldclim_average_2041_2060/Clipped/In_tiff_format'),
+        '2061_2080': pathlib.Path('/data/Maxent/data/data/SSP_370/Bioclim_worldclim_average_2061_2080/Clipped/In_tiff_format'),
+        '2081_2100': pathlib.Path('/data/Maxent/data/data/SSP_370/Bioclim_worldclim_average_2081_2100/Clipped/In_tiff_format')
+    },
+    
+    'SSP_585': {
+        '1970_2000': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_1970_2000/wc2.1_10m_bio/Clipped/In_tiff_format'),
+        '1990_2021': pathlib.Path('/data/Maxent/data/data/Bioclim_worldclim_average_1990_2021/Clipped/In_tiff_format'), # not using this time average, as this is computed by me. Only using avg from bioclim.
+        '2021_2040': pathlib.Path('/data/Maxent/data/data/SSP_585/Bioclim_worldclim_average_2021_2040/Clipped/In_tiff_format'),
+        '2041_2060': pathlib.Path('/data/Maxent/data/data/SSP_585/Bioclim_worldclim_average_2041_2060/Clipped/In_tiff_format'),
+        '2061_2080': pathlib.Path('/data/Maxent/data/data/SSP_585/Bioclim_worldclim_average_2061_2080/Clipped/In_tiff_format'),
+        '2081_2100': pathlib.Path('/data/Maxent/data/data/SSP_585/Bioclim_worldclim_average_2081_2100/Clipped/In_tiff_format')
     }
 }
 

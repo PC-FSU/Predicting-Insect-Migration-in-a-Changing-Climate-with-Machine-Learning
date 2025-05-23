@@ -103,10 +103,10 @@ def prepare_test_train(presence, train_background, test_background, plot=False, 
     print(f'train_presence : {train_presence.shape} | test_presence : {test_presence.shape} | train_background : {train_background.shape} | test_background : {test_background.shape}...\n\n')
 
     save_path_ = resolve_save_path(save_path, 'presence_train_test_split.png')
-    plot_functions.plot_train_test_split(train_presence, test_presence, plot, save_path_)
+    plot_functions.plot_train_test_split(train_presence, test_presence, plot=plot, title='Presence', save_path=save_path_)
     
     save_path_ = resolve_save_path(save_path, 'background_train_test_split.png')
-    plot_functions.plot_train_test_split(train_background, test_background, plot, save_path_)
+    plot_functions.plot_train_test_split(train_background, test_background, plot=plot, title='Background', save_path=save_path_)
     
     return {
         "x_train": x_train,
@@ -139,10 +139,12 @@ def evaluate(model, x_test, y_test, x_train, y_train, cat_indices, plot=False, s
 
     auc = {'AUC_test': metrics.roc_auc_score(y_test, model.predict(x_test))}
 
+    nbins = 20
     # CBI on train
     cbi_train = Continuous_boyce_index.continuous_boyce_index(
         yobs=model.predict(x_train[y_train == 1]),
         ypred=model.predict(x_train[y_train == 0]),
+        nbins=nbins,
         to_plot=False
     )
     plot_functions.plot_PE_curve(
@@ -156,6 +158,7 @@ def evaluate(model, x_test, y_test, x_train, y_train, cat_indices, plot=False, s
     cbi_test = Continuous_boyce_index.continuous_boyce_index(
         yobs=model.predict(x_test[y_test == 1]),
         ypred=model.predict(x_test[y_test == 0]),
+        nbins=nbins,
         to_plot=False
     )
     plot_functions.plot_PE_curve(
@@ -166,13 +169,13 @@ def evaluate(model, x_test, y_test, x_train, y_train, cat_indices, plot=False, s
     )
 
     # Partial dependency plot
-    plot_functions.plot_partial_dependency(
-        model,
-        x_train,
-        cat_indices,
-        plot,
-        resolve_save_path(save_path, 'partial_dependency_plot.png')
-    )
+    # plot_functions.plot_partial_dependency(
+    #     model,
+    #     x_train,
+    #     cat_indices,
+    #     plot,
+    #     resolve_save_path(save_path, 'partial_dependency_plot.png')
+    # )
 
     return feature_importance, auc, cbi_train, cbi_test
 

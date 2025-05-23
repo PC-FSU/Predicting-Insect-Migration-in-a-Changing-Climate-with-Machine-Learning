@@ -174,7 +174,7 @@ def plot_sample_weights(df_presence, df_background,  plot=False, save_path=False
     
 
 
-def plot_train_test_split(train, test, plot=False, save_path=None):
+def plot_train_test_split(train, test, plot=False, title='Dataset', save_path=None):
     train = train.copy()
     test = test.copy()
     train['split'] = 'train'
@@ -214,7 +214,7 @@ def plot_train_test_split(train, test, plot=False, save_path=None):
     legend = ax.get_legend()
     if legend:
         legend.set_frame_on(False)  # Remove legend box
-        legend.set_title('Dataset', prop={'size': 20})  # Set title font size
+        legend.set_title(title, prop={'size': 20})  # Set title font size
         for text in legend.get_texts():
             text.set_fontsize(20)  # Set label font size
 
