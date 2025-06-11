@@ -116,11 +116,12 @@ def prepare_test_train(presence, train_background, test_background, plot=False, 
     }
 
 
-def train_model(x_train, y_train, cat_indices=None, tau=0.5):
+def train_model(x_train, y_train, cat_indices=None, tau=0.5, beta_multiplier=2.0, feature_type='lph'):
     """
     Trains a MaxEnt model using cloglog transform and specified tau.
     """
-    model = ela.MaxentModel(transform='cloglog', tau=tau, beta_multiplier=2.0)
+    print(f'Training model with tau={tau}, beta_multiplier={beta_multiplier}, feature_type={feature_type}...\n')
+    model = ela.MaxentModel(transform='cloglog', tau=tau, beta_multiplier=beta_multiplier, feature_types=feature_type)
     model.fit(x_train, y_train, categorical=cat_indices)
     return model
 

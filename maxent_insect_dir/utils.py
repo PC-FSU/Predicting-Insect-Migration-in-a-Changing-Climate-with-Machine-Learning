@@ -9,6 +9,7 @@ from maxent_insect_dir.spatial_kde import spatial_kernel_density
 from sklearn import metrics
 from sklearn.metrics import make_scorer, roc_auc_score
 from sklearn.inspection import permutation_importance
+from datetime import datetime
 
 from scipy.spatial import cKDTree
 
@@ -62,7 +63,8 @@ def spatial_weighted_background(presence, uniform_raster, bias_uniform_mix_coeff
     
     print(f'Number of point selected | uniformly: {n_point_uniform}  | with bias: {n_point_biased}\n\n')
     
-    dir_path = 'temp'
+    dir_path = 'temp_' + str(hash(datetime.now().strftime('%Y_%m_%d_%H_%M')))
+    
     bias_raster = os.path.join(dir_path, 'bias.tif')
     if not os.path.exists(dir_path):
         # Create the directory
