@@ -244,8 +244,8 @@ if __name__ == '__main__':
     pathways = args.pathways # this will be a list
 
     # insect_names = ['Brown_Marmorated_Stink_bug', 'Corn_Earworm', 'Root_Weevil', 'Spongy_Moth', 'Spooted_Lanternfly']
-    insect_names = ['Brown_Marmorated_Stink_bug', 'Root_Weevil', 'Spongy_Moth']
-    feature_types = ["l", "lq", "lqh", "lph", "lqhp", "lqhpt"] # must be in string "lqphta" 
+    insect_names =  ['Spooted_Lanternfly']# ['Brown_Marmorated_Stink_bug', 'Root_Weevil', 'Spongy_Moth']
+    feature_types = ['l',  "lq", "lqh", "lph", "lqhp", "lqhpt"] #["l", "lq", "lqh", "lph", "lqhp", "lqhpt"] # must be in string "lqphta" 
     beta_multipliers = [0.5, 1, 1.5, 2.0, 2.5]
     
     for pathway in pathways:
@@ -282,7 +282,6 @@ if __name__ == '__main__':
                             use_crop=metadata['use_crop'],
                             crop_raster_path=config.PATH_TO_MOST_GROWN_CROP if metadata['use_crop'] else None
                         )
-                        
                         
 
                         # bias_uniform_mix_coeff_list = [0, 0.25, 0.5, 0.75, 1.0]
