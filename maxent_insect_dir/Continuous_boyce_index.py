@@ -1,12 +1,11 @@
 import math
 import warnings
-from typing import Dict, List, Tuple, Union
-
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
+from typing import Dict, List, Tuple, Union
 
 # implement continuous Boyce index as describe in https://www.whoi.edu/cms/files/hirzel_etal_2006_53457.pdf (Eq.4)
 

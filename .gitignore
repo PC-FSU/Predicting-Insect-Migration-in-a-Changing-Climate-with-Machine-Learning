@@ -1,6 +1,7 @@
 # Data
 /data/
 /reports/*
+/dummy_results/*
 /legacy_maxent_insect_dir_v1/*
 /legacy_maxent_insect_dir_v2_15_dec/*
 /maxent_insect_dir/feature_important_drift.py

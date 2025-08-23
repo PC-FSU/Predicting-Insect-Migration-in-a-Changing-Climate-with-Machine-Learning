@@ -1,82 +1,108 @@
-import pathlib
-import os
+"""
+Configuration file for paths and parameters used in the MaxEnt insect project.
+
+This file centralizes references to data sources, output directories,
+and experimental settings (e.g., thinning distance, crop codes).
+"""
+
+from pathlib import Path
+
+# ================================================================================================
+# Base paths
+# ================================================================================================
+
+# Directory containing cleaned species occurrence data
+# (Non-US points and outliers removed)
+PATH_TO_CLEAN_DATA = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/species_data")
+
+# Directory where model outputs and results are saved
+PATH_TO_SAVE_RESULTS = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_results")
+
+# US boundary shapefile
+PATH_TO_US_BOUNDARY = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/us_shapefile/US_shapefile.shp")
+
+# Test dataset
+PATH_TO_TEST_DATA = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/test_data/test.gpkg")
 
 
-# This file contains paths pointing to different assets in the project.
+# ================================================================================================
+# Insect data configuration
+# ================================================================================================
 
-#---------------------------------------- Base_paths -----------------------------------------
-
-# Path to clean data -- removed non-us point, and outliers.
-PATH_TO_CLEAN_DATA = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/species_data") 
-
-# Path where the models is saved
-PATH_TO_SAVE_RESULTS = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_results")
-
-# Path to US boundary shapefile
-PATH_TO_US_BOUNDARY = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/us_shapefile/US_shapefile.shp")
-
-# Path to test data
-PATH_TO_TEST_DATA = pathlib.Path('/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/test_data/test.gpkg')
-
-
-#---------------------------------------- To config insects -----------------------------------------
-
-Insect_list = {
-    'Corn_Earworm': pathlib.Path(os.path.join(PATH_TO_CLEAN_DATA, "corn_earworm_subset.gpkg")),
-    'Large_Lady_Beetle': None,
-    'Root_Weevil': None,
-    'Spongy_Moth': None,
-    'Spooted_Lanternfly': None,
-    'Brown_Marmorated_Stink_bug': None,
+insect_data = {
+    "Corn_Earworm": PATH_TO_CLEAN_DATA / "corn_earworm_subset.gpkg",
+    "Large_Lady_Beetle": None,
+    "Root_Weevil": None,
+    "Spongy_Moth": None,
+    "Spooted_Lanternfly": None,
+    "Brown_Marmorated_Stink_bug": None,
 }
 
-#---------------------------------------- To config crop -----------------------------------------
 
-# Dictionary to store all path to the raster file for crop data
-PATH_TO_MOST_GROWN_CROP = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/crop_data/avg_crop_layer/reproject_most_grown_crop_1_min.tif")
+# ================================================================================================
+# Crop data configuration
+# ================================================================================================
 
-# path to csv which contain the code:crop_name entries. 
-Crop_mapping_config = pathlib.Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/crop_data/cdl_codes_names.csv")
+# Most grown crop raster file (reprojected, 1-minute resolution)
+PATH_TO_MOST_GROWN_CROP = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/crop_data/avg_crop_layer/reproject_most_grown_crop_1_min.tif")
 
-# Crop code like by each insect. These code are selected in a way that it represent the 90% of insect observation are associated with these crops.
+# CSV mapping CDL codes to crop names
+CROP_MAPPING_CONFIG = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/crop_data/cdl_codes_names.csv")
+
+# Crop codes (CDL) associated with insects
+# These represent crops covering ~90% of insect observations
 dominant_crop_by_insect = {
-    'Brown_Marmorated_Stink_bug' : [121, 141, 122, 123, 190],
-    'Corn_Earworm' : [141, 1, 5, 190, 142, 176, 121, 2],
-    'Large_Lady_Beetle' : [123, 141, 122, 121, 176, 124, 142, 190],
-    'Root_Weevil' : [122, 123, 121, 190]
+    "Brown_Marmorated_Stink_bug": [121, 141, 122, 123, 190],
+    "Corn_Earworm": [141, 1, 5, 190, 142, 176, 121, 2],
+    "Large_Lady_Beetle": [123, 141, 122, 121, 176, 124, 142, 190],
+    "Root_Weevil": [122, 123, 121, 190],
 }
 
-#---------------------------------------- To config climate -----------------------------------------
+
+# ================================================================================================
+# Climate data configuration
+# ================================================================================================
 
 config_worldclim = {
-    'SSP_245': {
-        '1970_2000': pathlib.Path('/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/climate_data/SSP_245/1970_2000/In_tiff_format'),
-        '2021_2040': pathlib.Path('/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/climate_data/SSP_245/2021_2040/In_tiff_format'),
-        '2041_2060': pathlib.Path('/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/climate_data/SSP_245/2041_2060/In_tiff_format'),
+    "SSP_245": {
+        "1970_2000": Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/climate_data/SSP_245/1970_2000/In_tiff_format"),
+        "2021_2040": Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/climate_data/SSP_245/2021_2040/In_tiff_format"),
+        "2041_2060": Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/climate_data/SSP_245/2041_2060/In_tiff_format"),
     }
 }
-# add path of other pathways, and projection time if needed.
-
-# ---------------------------------------- Elevation data -----------------------------------------
-PATH_TO_ELEVATION_DATA = pathlib.Path('/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/elevation/stanford-zz186ss2071-geotiff.tif')
+# TODO: Add additional climate scenarios (SSP_126, SSP_370, SSP_585, etc.) if required
 
 
-# -------------------------------------- experiment config --------------------------------------------
-# minium spatial thinning distance for different insects in meters.
+# ================================================================================================
+# Elevation data
+# ================================================================================================
+
+PATH_TO_ELEVATION_DATA = Path(
+    "/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/elevation/stanford-zz186ss2071-geotiff.tif"
+)
+
+
+# ================================================================================================
+# Experiment configuration
+# ================================================================================================
+
+# Minimum spatial thinning distance per insect (in meters)
 spatial_thinning_distance = {
-    'Brown_Marmorated_Stink_bug' : 10000,
-    'Corn_Earworm' : 10000,
-    'Large_Lady_Beetle' : 10000,
-    'Brown_Marmorated_Stink_bug_2' : 10000,
-    'Root_Weevil' : 10000,
-    'Spongy_Moth': None, # Points are already well dispersed. 
-    'Spooted_Lanternfly' : 10000
+    "Brown_Marmorated_Stink_bug": 10000,
+    "Corn_Earworm": 10000,
+    "Large_Lady_Beetle": 10000,
+    "Brown_Marmorated_Stink_bug_2": 10000,
+    "Root_Weevil": 10000,
+    "Spongy_Moth": None,  # Points are already well dispersed
+    "Spooted_Lanternfly": 10000,
 }
 
 
-#-------------------------------------- Bioclim Json --------------------------------------------------
+# ================================================================================================
+# Bioclimatic variable mapping
+# ================================================================================================
 
-Bioclim_mapping = {
+bioclim_mapping = {
     "Bio1": "Annual Mean Temperature",
     "Bio2": "Mean Diurnal Range (Mean of monthly (max temp - min temp))",
     "Bio3": "Isothermality (BIO2/BIO7) (×100)",
@@ -95,22 +121,26 @@ Bioclim_mapping = {
     "Bio16": "Precipitation of Wettest Quarter",
     "Bio17": "Precipitation of Driest Quarter",
     "Bio18": "Precipitation of Warmest Quarter",
-    "Bio19": "Precipitation of Coldest Quarter"
+    "Bio19": "Precipitation of Coldest Quarter",
 }
 
 
-# ---------------------------------- Prevalance factor---------------------------------------------------------
-
+# ================================================================================================
+# Prevalence factors (tau)
+# ================================================================================================
 
 tau = {
-    'Brown_Marmorated_Stink_bug': 0.5,
-    'Corn_Earworm': 0.5,
-    'Large_Lady_Beetle': 0.5,
-    'Root_Weevil': 0.1,
-    'Spongy_Moth': 0.1,
-    'Spooted_Lanternfly': 0.5
+    "Brown_Marmorated_Stink_bug": 0.5,
+    "Corn_Earworm": 0.5,
+    "Large_Lady_Beetle": 0.5,
+    "Root_Weevil": 0.1,
+    "Spongy_Moth": 0.1,
+    "Spooted_Lanternfly": 0.5,
 }
 
 
-# -------------------------------- Path to save images for paper ----------------------------------------
-save_images = pathlib.Path('/data/Maxent/data/paper/images')
+# ================================================================================================
+# Paths for saving figures (e.g., for papers)
+# ================================================================================================
+
+PATH_TO_SAVE_IMAGES = Path("/data/Maxent/data/paper/images")

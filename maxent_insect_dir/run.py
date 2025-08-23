@@ -12,10 +12,28 @@ from maxent_insect_dir.utils import remove_highly_correlated
 from sklearn import metrics
 
 
-
+# -------------------------------------------------------------------------
 # Utility Functions
+# -------------------------------------------------------------------------
+
 def create_output_directory(metadata):
-    """Create output directory for saving results."""
+    """
+    Create an output directory for saving experiment results.  
+    Directory structure depends on metadata and includes timestamp.
+
+    Args:
+        metadata (dict): Dictionary containing experiment metadata with keys:
+            - 'pathway' (str): Climate pathway (e.g., "SSP_245").
+            - 'insect_name' (str): Insect species name.
+            - 'bias_uniform_mix_coeff' (float): Mixing coefficient for bias vs uniform.
+            - 'feature_type' (str): Feature types string (e.g., "lqhpt").
+            - 'beta_multiplier' (float): Regularization multiplier.
+            - 'avg' (str): Climate baseline (e.g., "1970_2000").
+            - 'climate_source' (str): Data source name.
+
+    Returns:
+        pathlib.Path: Path to the created (or existing) directory.
+    """
     timestamp = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
     path = pathlib.Path(
         os.path.join(
@@ -37,7 +55,24 @@ def create_output_directory(metadata):
 
 
 def process_presence_background(metadata, data):
-    """Process presence and background data."""
+    """
+    Process and generate presence and background data.
+
+    Args:
+        metadata (dict): Experiment metadata containing:
+            - 'insect_name' (str): Insect species.
+            - 'to_thin' (bool): Whether to thin presence data.
+            - 'bias_uniform_mix_coeff' (float): Bias-uniform mixing coefficient.
+            - 'background_count' (int): Number of background samples.
+            - 'plot' (bool): Whether to generate plots.
+            - 'model_savefig_path' (str): Path to save plots.
+        data (dict): Dictionary of training rasters.
+
+    Returns:
+        tuple:
+            - presence (GeoDataFrame): Annotated presence points.
+            - background (GeoDataFrame): Annotated background points.
+    """
     print('Step: get presence-background data...\n\n')
     presence, background = run_utils.get_presence_background(
         insect_name=metadata['insect_name'],
@@ -52,7 +87,24 @@ def process_presence_background(metadata, data):
 
 
 def annotate_data(metadata, presence, background, data, raster_labels):
-    """Annotate presence and background data."""
+    """
+    Annotate presence and background data with raster values.
+
+    Args:
+        metadata (dict): Experiment metadata with flags for elevation/crop usage.
+        presence (GeoDataFrame): Presence points.
+        background (GeoDataFrame): Background points.
+        data (dict): Dictionary of raster datasets for training.
+        raster_labels (dict): Labels for each raster type:
+            - 'bioclim' (list[str])
+            - 'elevation' (list[str])
+            - 'crop' (list[str])
+
+    Returns:
+        tuple:
+            - presence (GeoDataFrame): Annotated presence data.
+            - background (GeoDataFrame): Annotated background data.
+    """
     print('Step: Annotate bioclim variable...\n\n')
     presence = run_utils.annotate(
         points=presence,
@@ -64,7 +116,6 @@ def annotate_data(metadata, presence, background, data, raster_labels):
         rasters=data['train']['bioclim']['rasters'],
         labels=raster_labels['bioclim']
     )
-    
 
     if metadata['use_elevation']:
         print('Step: Annotate elevation variable...\n\n')
@@ -95,7 +146,17 @@ def annotate_data(metadata, presence, background, data, raster_labels):
 
 
 def prepare_test_data(metadata, data, raster_labels):
-    """Prepare test data."""
+    """
+    Prepare and annotate test dataset.
+
+    Args:
+        metadata (dict): Experiment metadata with elevation/crop flags.
+        data (dict): Training and test raster datasets.
+        raster_labels (dict): Raster variable labels.
+
+    Returns:
+        GeoDataFrame: Annotated test dataset.
+    """
     test = gpd.read_file(config.PATH_TO_TEST_DATA)[['geometry']]
     test = run_utils.annotate(test, data['train']['bioclim']['rasters'], labels=raster_labels['bioclim'], drop_na=True)
     if metadata['use_elevation']:
@@ -106,7 +167,22 @@ def prepare_test_data(metadata, data, raster_labels):
 
 
 def remove_correlated_features(metadata, presence, background, raster_labels):
-    """Remove correlated features from the dataset."""
+    """
+    Remove highly correlated features from presence/background datasets.
+
+    Args:
+        metadata (dict): Experiment metadata containing threshold, plot, etc.
+        presence (GeoDataFrame): Annotated presence dataset.
+        background (GeoDataFrame): Annotated background dataset.
+        raster_labels (dict): Labels for raster features.
+
+    Returns:
+        tuple:
+            - metadata (dict): Updated metadata with KS results.
+            - presence (GeoDataFrame): Filtered presence dataset.
+            - background (GeoDataFrame): Filtered background dataset.
+            - cols_to_keep (list[str]): Final kept feature columns.
+    """
     cols_to_keep = [metadata['base_cols']]
     if metadata['use_elevation']:
         cols_to_keep.append(raster_labels['elevation'])
@@ -144,7 +220,18 @@ def remove_correlated_features(metadata, presence, background, raster_labels):
 
 
 def prepare_train_test_split(metadata, presence, background, test):
-    """Prepare train-test split."""
+    """
+    Prepare train-test data split for model training and evaluation.
+
+    Args:
+        metadata (dict): Experiment metadata with plotting and path info.
+        presence (GeoDataFrame): Presence dataset.
+        background (GeoDataFrame): Background dataset.
+        test (GeoDataFrame): Test dataset.
+
+    Returns:
+        dict: Updated metadata with train/test splits (x_train, y_train, x_test, y_test).
+    """
     print('Step: prepare test-train data...\n\n')
     result = run_utils.prepare_test_train(
         presence=presence,
@@ -159,7 +246,16 @@ def prepare_train_test_split(metadata, presence, background, test):
 
 
 def train_and_evaluate_model(metadata, raster_labels):
-    """Train and evaluate the model."""
+    """
+    Train model and evaluate its performance.
+
+    Args:
+        metadata (dict): Experiment metadata with x_train, y_train, etc.
+        raster_labels (dict): Raster labels for categorical variables.
+
+    Returns:
+        dict: Updated metadata with trained model, feature importance, and metrics.
+    """
     print('Step: Run the experiment...\n\n')
     cat_indices = []
     if metadata['use_elevation']:
@@ -201,7 +297,17 @@ def train_and_evaluate_model(metadata, raster_labels):
 
 
 def generate_projections(metadata, data, raster_labels):
-    """Generate future projections."""
+    """
+    Generate species distribution projections for future climate scenarios.
+
+    Args:
+        metadata (dict): Experiment metadata containing model info.
+        data (dict): Raster datasets for different time periods.
+        raster_labels (dict): Raster variable labels.
+
+    Returns:
+        None
+    """
     print('Step: evaluate the future projection...\n\n')
     time_ranges = {
         'current': 'train',
@@ -229,10 +335,21 @@ def generate_projections(metadata, data, raster_labels):
 
 
 def save_metadata(metadata):
-    """Save experiment metadata."""
+    """
+    Save experiment metadata to disk.
+
+    Args:
+        metadata (dict): Experiment metadata containing:
+            - 'save_experiment_metadata' (bool)
+            - 'model_metadata_path' (str)
+
+    Returns:
+        None
+    """
     print('Step: store metadata now...\n\n')
     if metadata['save_experiment_metadata']:
         joblib.dump(metadata, os.path.join(metadata['model_metadata_path'], 'experiment_states.pkl'))
+
 
 
 # Main Workflow
@@ -244,9 +361,6 @@ if __name__ == '__main__':
     beta_multipliers = [0.5] # for regularization multiplier [0.5, 1, 1.5, 2.0, 2.5]
     num_experiments = 1  # Number of experiments per configuration
     background_count = 100
-    
-    # print(config.config_worldclim)
-    # import sys; sys.exit(0)  # Exit after one iteration for testing purposes
     
     # Loop through different experiments. Or just pick one for experiment purpose.
     for pathway in pathways:
