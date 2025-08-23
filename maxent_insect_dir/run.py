@@ -3,13 +3,14 @@ import os
 import pathlib
 import argparse
 import itertools
-from datetime import datetime
 import joblib
 import geopandas as gpd
+import elapid as ela
+from datetime import datetime
 from maxent_insect_dir import config, prepare_metadata, run_utils
 from maxent_insect_dir.utils import remove_highly_correlated
 from sklearn import metrics
-import elapid as ela
+
 
 
 # Utility Functions
@@ -205,9 +206,7 @@ def generate_projections(metadata, data, raster_labels):
     time_ranges = {
         'current': 'train',
         '2040': '2021_2040',
-        '2060': '2041_2060',
-        '2080': '2061_2080',
-        '2100': '2081_2100',
+        '2060': '2041_2060'
     }
 
     projections = {
@@ -238,20 +237,22 @@ def save_metadata(metadata):
 
 # Main Workflow
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Run MaxEnt experiments with specified climate pathways.")
-    parser.add_argument('--pathways', nargs='+', required=True, help='List of SSP pathways to run (e.g., SSP_245 SSP_370)')
-    args = parser.parse_args()
-    pathways = args.pathways # this will be a list
-
-    # insect_names = ['Brown_Marmorated_Stink_bug', 'Corn_Earworm', 'Root_Weevil', 'Spongy_Moth', 'Spooted_Lanternfly']
-    insect_names =  ['Spooted_Lanternfly']# ['Brown_Marmorated_Stink_bug', 'Root_Weevil', 'Spongy_Moth']
-    feature_types = ['l',  "lq", "lqh", "lph", "lqhp", "lqhpt"] #["l", "lq", "lqh", "lph", "lqhp", "lqhpt"] # must be in string "lqphta" 
-    beta_multipliers = [0.5, 1, 1.5, 2.0, 2.5]
     
+    pathways = ['SSP_245']  # this will be a list
+    insect_names =  ['Corn_Earworm'] # One of this or other: ['Brown_Marmorated_Stink_bug', 'Corn_Earworm', 'Root_Weevil', 'Spongy_Moth', 'Spooted_Lanternfly']
+    feature_types = ['l']  # must be in string "lqphta", like "l", "lq", "lqh", "lph", "lqhp", "lqhpt" or othe combinations
+    beta_multipliers = [0.5] # for regularization multiplier [0.5, 1, 1.5, 2.0, 2.5]
+    num_experiments = 1  # Number of experiments per configuration
+    background_count = 100
+    
+    # print(config.config_worldclim)
+    # import sys; sys.exit(0)  # Exit after one iteration for testing purposes
+    
+    # Loop through different experiments. Or just pick one for experiment purpose.
     for pathway in pathways:
         for feature_type in feature_types:
             for beta_multiplier in beta_multipliers:
-                for i in range(4):
+                for _ in range(num_experiments):
                     for name in insect_names:
                         # Define experiment parameters
                         metadata = {
@@ -259,9 +260,10 @@ if __name__ == '__main__':
                                 'feature_type': feature_type,
                                 'beta_multiplier': beta_multiplier,
                                 'avg': '1970_2000',
+                                'projection_period' : ["2021_2040", "2041_2060"],
                                 'pathway': pathway,
                                 'climate_source': 'WorldClim',
-                                'background_count': 10000,
+                                'background_count': background_count,
                                 'plot': False,
                                 'base_cols': ['geometry'],
                                 'threshold': 0.9,
@@ -277,15 +279,15 @@ if __name__ == '__main__':
                         data, raster_labels = prepare_metadata.prepare_experiment_metadata(
                             config.config_worldclim[metadata['pathway']] if metadata['climate_source'] == 'WorldClim' else config.config_CDS['avgs'],
                             metadata['avg'],
+                            data_periods=['train'] + metadata['projection_period'],
                             use_elevation=metadata['use_elevation'],
                             elevation_raster_path=config.PATH_TO_ELEVATION_DATA if metadata['use_elevation'] else None,
                             use_crop=metadata['use_crop'],
                             crop_raster_path=config.PATH_TO_MOST_GROWN_CROP if metadata['use_crop'] else None
                         )
                         
-
-                        # bias_uniform_mix_coeff_list = [0, 0.25, 0.5, 0.75, 1.0]
-                        bias_uniform_mix_coeff_list = [0.25]  # using optimized value               
+                        
+                        bias_uniform_mix_coeff_list = [0.25]  # using optimized value. Can be of anything: [0, 0.25, 0.5, 0.75, 1.0]              
 
 
                         for bias_uniform_mix_coeff in bias_uniform_mix_coeff_list:

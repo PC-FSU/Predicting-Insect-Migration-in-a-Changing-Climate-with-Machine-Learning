@@ -4,12 +4,8 @@ import numpy as np
 import geopandas as gpd
 import rasterio as rio
 import matplotlib.pyplot as plt
-
-plt.style.use('/home/pc19d/postdoc/MaxEnt_insect_dir/maxent_insect_dir/my_style.mplstyle')
-
-from sklearn import metrics
 import elapid as ela
-
+from sklearn import metrics
 from maxent_insect_dir import config, utils, plot_functions, Continuous_boyce_index
 
 
@@ -169,14 +165,14 @@ def evaluate(model, x_test, y_test, x_train, y_train, cat_indices, plot=False, s
         save_path=resolve_save_path(save_path, 'cbi_test.png')
     )
 
-    # Partial dependency plot
-    # plot_functions.plot_partial_dependency(
-    #     model,
-    #     x_train,
-    #     cat_indices,
-    #     plot,
-    #     resolve_save_path(save_path, 'partial_dependency_plot.png')
-    # )
+    #Partial dependency plot
+    plot_functions.plot_partial_dependency(
+        model,
+        x_train,
+        cat_indices,
+        plot,
+        resolve_save_path(save_path, 'partial_dependency_plot.png')
+    )
 
     return feature_importance, auc, cbi_train, cbi_test
 

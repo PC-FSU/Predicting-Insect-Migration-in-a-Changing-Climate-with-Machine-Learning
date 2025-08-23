@@ -104,13 +104,14 @@ def prepare_crop_metadata(data, crop_raster_path, data_periods, raster_labels):
     return data
 
 
-def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevation_raster_path=None, use_crop=False, crop_raster_path=None):
+def prepare_experiment_metadata(bioclim_config, avg, data_periods, use_elevation=False, elevation_raster_path=None, use_crop=False, crop_raster_path=None):
     """
     Prepare datasets for climatic, elevation, and crop data.
 
     Args:
         bioclim_config (dict): Configuration for bioclimatic data paths by time period.
         avg (str): Key for average bioclimatic data in the configuration.
+        data_periods (str): List of time periods for the projection.
         use_elevation (bool): Whether to include elevation data.
         elevation_raster_path (str): Path to the elevation data.
         use_crop (bool): Whether to include crop data.
@@ -119,19 +120,17 @@ def prepare_experiment_metadata(bioclim_config, avg, use_elevation=False, elevat
     Returns:
         tuple: Organized data dictionary and raster labels.
     """
-    # Define periods and data types
-    data_periods = ["train", "2021_2040", "2041_2060", "2061_2080", "2081_2100"]
-    data_types = ["bioclim"]  # Each experiment will have bioclimatic variables
+    data_used = ["bioclim"]  # Each experiment will have bioclimatic variables
     raster_labels = {}
 
     if use_elevation:
-        data_types.append("elevation")
+        data_used.append("elevation")
     if use_crop:
-        data_types.append("crop")
+        data_used.append("crop")
 
     # Initialize data dictionary
     data = {
-        period: {data_type: {"rasters": None, "mapping": None} for data_type in data_types}
+        period: {data_type: {"rasters": None, "mapping": None} for data_type in data_used}
         for period in data_periods
     }
 

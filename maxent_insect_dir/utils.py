@@ -10,9 +10,7 @@ from sklearn import metrics
 from sklearn.metrics import make_scorer, roc_auc_score
 from sklearn.inspection import permutation_importance
 from datetime import datetime
-
 from scipy.spatial import cKDTree
-
 from maxent_insect_dir.plot_functions import *
 
 
