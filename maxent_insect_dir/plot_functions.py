@@ -3,16 +3,16 @@ import elapid as ela
 import math
 import rasterio as rio
 import numpy as np
-import config
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from pathlib import Path
-plt.style.use('./my_style.mplstyle')
+plt.style.use('maxent_insect_dir/my_style.mplstyle')
+
 
 from scipy.stats import ks_2samp
 from sklearn.inspection import partial_dependence
 from matplotlib.colors import ListedColormap
-
+from maxent_insect_dir import config
 
 def plot_presence_background(presence, presence_thinned, background, plot=False, save_path=False):
     """

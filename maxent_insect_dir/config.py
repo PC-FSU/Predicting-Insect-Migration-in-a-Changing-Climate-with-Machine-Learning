@@ -5,24 +5,29 @@ This file centralizes references to data sources, output directories,
 and experimental settings (e.g., thinning distance, crop codes).
 """
 
+import os
 from pathlib import Path
 
 # ================================================================================================
 # Base paths
 # ================================================================================================
 
+# Base directory = repository root (two levels up from this file)
+BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR_STR = str(BASE_DIR)   # used with os.path.join below
+
 # Directory containing cleaned species occurrence data
 # (Non-US points and outliers removed)
-PATH_TO_CLEAN_DATA = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/species_data")
+PATH_TO_CLEAN_DATA = os.path.join(BASE_DIR_STR, "dummy_data", "species_data")
 
 # Directory where model outputs and results are saved
-PATH_TO_SAVE_RESULTS = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_results")
+PATH_TO_SAVE_RESULTS = os.path.join(BASE_DIR_STR, "dummy_results")
 
 # US boundary shapefile
-PATH_TO_US_BOUNDARY = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/us_shapefile/US_shapefile.shp")
+PATH_TO_US_BOUNDARY = os.path.join(BASE_DIR_STR, "dummy_data", "us_shapefile", "US_shapefile.shp")
 
 # Test dataset
-PATH_TO_TEST_DATA = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/test_data/test.gpkg")
+PATH_TO_TEST_DATA = os.path.join(BASE_DIR_STR, "dummy_data", "test_data", "test.gpkg")
 
 
 # ================================================================================================
@@ -30,7 +35,7 @@ PATH_TO_TEST_DATA = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/test_
 # ================================================================================================
 
 insect_data = {
-    "Corn_Earworm": PATH_TO_CLEAN_DATA / "corn_earworm_subset.gpkg",
+    "Corn_Earworm": os.path.join(PATH_TO_CLEAN_DATA, "corn_earworm_subset.gpkg"),
     "Large_Lady_Beetle": None,
     "Root_Weevil": None,
     "Spongy_Moth": None,
@@ -44,13 +49,14 @@ insect_data = {
 # ================================================================================================
 
 # Most grown crop raster file (reprojected, 1-minute resolution)
-PATH_TO_MOST_GROWN_CROP = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/crop_data/avg_crop_layer/reproject_most_grown_crop_1_min.tif")
+PATH_TO_MOST_GROWN_CROP = os.path.join(
+    BASE_DIR_STR, "dummy_data", "crop_data", "avg_crop_layer", "reproject_most_grown_crop_1_min.tif"
+)
 
 # CSV mapping CDL codes to crop names
-CROP_MAPPING_CONFIG = Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/crop_data/cdl_codes_names.csv")
+CROP_MAPPING_CONFIG = os.path.join(BASE_DIR_STR, "dummy_data", "crop_data", "cdl_codes_names.csv")
 
 # Crop codes (CDL) associated with insects
-# These represent crops covering ~90% of insect observations
 dominant_crop_by_insect = {
     "Brown_Marmorated_Stink_bug": [121, 141, 122, 123, 190],
     "Corn_Earworm": [141, 1, 5, 190, 142, 176, 121, 2],
@@ -65,20 +71,19 @@ dominant_crop_by_insect = {
 
 config_worldclim = {
     "SSP_245": {
-        "1970_2000": Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/climate_data/SSP_245/1970_2000/In_tiff_format"),
-        "2021_2040": Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/climate_data/SSP_245/2021_2040/In_tiff_format"),
-        "2041_2060": Path("/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/climate_data/SSP_245/2041_2060/In_tiff_format"),
+        "1970_2000": os.path.join(BASE_DIR_STR, "dummy_data", "climate_data", "SSP_245", "1970_2000", "In_tiff_format"),
+        "2021_2040": os.path.join(BASE_DIR_STR, "dummy_data", "climate_data", "SSP_245", "2021_2040", "In_tiff_format"),
+        "2041_2060": os.path.join(BASE_DIR_STR, "dummy_data", "climate_data", "SSP_245", "2041_2060", "In_tiff_format"),
     }
 }
-# TODO: Add additional climate scenarios (SSP_126, SSP_370, SSP_585, etc.) if required
 
 
 # ================================================================================================
 # Elevation data
 # ================================================================================================
 
-PATH_TO_ELEVATION_DATA = Path(
-    "/home/pc19d/postdoc/MaxEnt_insect_dir/dummy_data/elevation/stanford-zz186ss2071-geotiff.tif"
+PATH_TO_ELEVATION_DATA = os.path.join(
+    BASE_DIR_STR, "dummy_data", "elevation", "stanford-zz186ss2071-geotiff.tif"
 )
 
 
@@ -143,4 +148,4 @@ tau = {
 # Paths for saving figures (e.g., for papers)
 # ================================================================================================
 
-PATH_TO_SAVE_IMAGES = Path("/data/Maxent/data/paper/images")
+PATH_TO_SAVE_IMAGES = os.path.join(BASE_DIR_STR, "data", "paper", "images")

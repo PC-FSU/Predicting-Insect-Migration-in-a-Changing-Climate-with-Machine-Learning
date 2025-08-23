@@ -7,8 +7,7 @@ import numpy as np
 from pathlib import Path
 from scipy.stats import ks_2samp
 from config import Bioclim_mapping
-
-plt.style.use('./maxent_insect_dir/my_style.mplstyle')
+plt.style.use('maxent_insect_dir/my_style.mplstyle')
 
 
 def plot_current_future_feature_distribution(projections, raster_names, plot=False, save_path=False):
