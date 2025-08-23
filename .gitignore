@@ -1,6 +1,8 @@
 # Data
 /data/
 /reports/*
+/legacy_maxent_insect_dir_v1/*
+/legacy_maxent_insect_dir_v2_15_dec/*
 /maxent_insect_dir/feature_important_drift.py
 /maxent_insect_dir/feature_importance_drift.ipynb
 /maxent_insect_dir/Experiment_result.ipynb
