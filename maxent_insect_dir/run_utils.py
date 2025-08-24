@@ -6,7 +6,7 @@ import rasterio as rio
 import matplotlib.pyplot as plt
 import elapid as ela
 from sklearn import metrics
-from maxent_insect_dir import config, utils, plot_functions, Continuous_boyce_index
+from maxent_insect_dir import config, utils, plot_functions, continuous_boyce_index
 
 
 def resolve_save_path(base_path, filename):
