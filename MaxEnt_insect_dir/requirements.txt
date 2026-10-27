@@ -1,0 +1,20 @@
+# Runtime dependencies (prefer: pip install -e ".[dev]")
+elapid
+geopandas
+rasterio
+numpy
+pandas
+scipy
+scikit-learn
+matplotlib
+seaborn
+joblib
+shapely
+typer
+python-dotenv
+
+# Dev / docs
+pytest
+black
+ruff
+mkdocs

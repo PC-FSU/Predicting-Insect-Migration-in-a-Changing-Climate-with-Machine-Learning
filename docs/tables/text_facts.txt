@@ -1,0 +1,329 @@
+
+======== Table 2: CBI vs m ========
+BMSB: best m = 0.25 (CBI 0.985 ± 0.007); m=0.25 CBI 0.985 ± 0.007; CBI(m=1) 0.856; AUC range for m<1 0.030 (max at m=0.00); CBI at m=0 0.982 with AUC 0.910
+    vs m=0.00: dCBI +0.003 [-0.002, +0.009], P(0.25 better) 0.45
+    vs m=0.50: dCBI +0.006 [+0.003, +0.009], P(0.25 better) 0.75
+    vs m=0.75: dCBI +0.004 [-0.001, +0.009], P(0.25 better) 0.65
+    vs m=1.00: dCBI +0.129 [+0.111, +0.145], P(0.25 better) 1.00
+CE: best m = 0.75 (CBI 0.979 ± 0.009); m=0.25 CBI 0.977 ± 0.008; CBI(m=1) 0.359; AUC range for m<1 0.014 (max at m=0.00); CBI at m=0 0.966 with AUC 0.881
+    vs m=0.00: dCBI +0.012 [+0.006, +0.018], P(0.25 better) 0.80
+    vs m=0.50: dCBI +0.001 [-0.004, +0.006], P(0.25 better) 0.50
+    vs m=0.75: dCBI -0.002 [-0.006, +0.003], P(0.25 better) 0.30
+    vs m=1.00: dCBI +0.619 [+0.572, +0.663], P(0.25 better) 1.00
+SM: best m = 0.00 (CBI 0.623 ± 0.086); m=0.25 CBI 0.462 ± 0.069; CBI(m=1) 0.039; AUC range for m<1 0.039 (max at m=0.00); CBI at m=0 0.623 with AUC 0.898
+    vs m=0.00: dCBI -0.161 [-0.204, -0.116], P(0.25 better) 0.10
+    vs m=0.50: dCBI +0.166 [+0.118, +0.211], P(0.25 better) 0.90
+    vs m=0.75: dCBI +0.260 [+0.231, +0.288], P(0.25 better) 1.00
+    vs m=1.00: dCBI +0.422 [+0.380, +0.464], P(0.25 better) 1.00
+RW: best m = 0.50 (CBI 0.903 ± 0.048); m=0.25 CBI 0.888 ± 0.034; CBI(m=1) 0.605; AUC range for m<1 0.004 (max at m=0.00); CBI at m=0 0.837 with AUC 0.993
+    vs m=0.00: dCBI +0.051 [+0.021, +0.082], P(0.25 better) 0.70
+    vs m=0.50: dCBI -0.015 [-0.038, +0.010], P(0.25 better) 0.40
+    vs m=0.75: dCBI -0.002 [-0.031, +0.030], P(0.25 better) 0.30
+    vs m=1.00: dCBI +0.282 [+0.243, +0.321], P(0.25 better) 1.00
+SL: best m = 0.25 (CBI 0.976 ± 0.010); m=0.25 CBI 0.976 ± 0.010; CBI(m=1) 0.455; AUC range for m<1 0.013 (max at m=0.00); CBI at m=0 0.951 with AUC 0.982
+    vs m=0.00: dCBI +0.024 [+0.016, +0.034], P(0.25 better) 0.85
+    vs m=0.50: dCBI +0.018 [-0.004, +0.051], P(0.25 better) 0.55
+    vs m=0.75: dCBI +0.074 [+0.033, +0.120], P(0.25 better) 0.70
+    vs m=1.00: dCBI +0.521 [+0.483, +0.555], P(0.25 better) 1.00
+
+======== Two-fold check ========
+BMSB: best on A m=0.25, best on B m=0.75 (different); m chosen on A gives CBI 0.984 on B (best on B 0.985, loss 0.002); m chosen on B gives 0.981 on A (best 0.985, loss 0.004)
+CE: best on A m=0.75, best on B m=0.00 (different); m chosen on A gives CBI 0.761 on B (best on B 0.977, loss 0.215); m chosen on B gives 0.966 on A (best 0.979, loss 0.013)
+SM: best on A m=0.00, best on B m=0.00 (same); m chosen on A gives CBI 0.572 on B (best on B 0.572, loss 0.000); m chosen on B gives 0.623 on A (best 0.623, loss 0.000)
+RW: best on A m=0.50, best on B m=0.50 (same); m chosen on A gives CBI 0.908 on B (best on B 0.908, loss 0.000); m chosen on B gives 0.903 on A (best 0.903, loss 0.000)
+SL: best on A m=0.25, best on B m=0.00 (different); m chosen on A gives CBI 0.904 on B (best on B 0.920, loss 0.015); m chosen on B gives 0.951 on A (best 0.976, loss 0.024)
+
+======== Kernel radius (table rows) ========
+BMSB & 0.25 & 0.983 $\pm$ 0.009 & 0.985 $\pm$ 0.007 & 0.987 $\pm$ 0.006 & 0.004 \\
+BMSB & 0.50 & 0.982 $\pm$ 0.016 & 0.979 $\pm$ 0.007 & 0.990 $\pm$ 0.007 & 0.011 \\
+BMSB & 0.75 & 0.958 $\pm$ 0.086 & 0.981 $\pm$ 0.007 & 0.986 $\pm$ 0.006 & 0.029 \\
+\midrule
+CE & 0.25 & 0.978 $\pm$ 0.009 & 0.977 $\pm$ 0.008 & 0.982 $\pm$ 0.008 & 0.005 \\
+CE & 0.50 & 0.969 $\pm$ 0.016 & 0.976 $\pm$ 0.010 & 0.982 $\pm$ 0.006 & 0.013 \\
+CE & 0.75 & 0.910 $\pm$ 0.172 & 0.979 $\pm$ 0.009 & 0.985 $\pm$ 0.007 & 0.075 \\
+\midrule
+SM & 0.25 & 0.493 $\pm$ 0.045 & 0.462 $\pm$ 0.069 & 0.461 $\pm$ 0.119 & 0.032 \\
+SM & 0.50 & 0.249 $\pm$ 0.074 & 0.295 $\pm$ 0.075 & 0.354 $\pm$ 0.085 & 0.105 \\
+SM & 0.75 & 0.187 $\pm$ 0.041 & 0.202 $\pm$ 0.034 & 0.255 $\pm$ 0.068 & 0.068 \\
+\midrule
+RW & 0.25 & 0.857 $\pm$ 0.050 & 0.888 $\pm$ 0.034 & 0.872 $\pm$ 0.028 & 0.031 \\
+RW & 0.50 & 0.896 $\pm$ 0.019 & 0.903 $\pm$ 0.048 & 0.868 $\pm$ 0.068 & 0.034 \\
+RW & 0.75 & 0.918 $\pm$ 0.034 & 0.890 $\pm$ 0.065 & 0.846 $\pm$ 0.064 & 0.072 \\
+\midrule
+SL & 0.25 & 0.964 $\pm$ 0.018 & 0.976 $\pm$ 0.010 & 0.985 $\pm$ 0.004 & 0.021 \\
+SL & 0.50 & 0.938 $\pm$ 0.081 & 0.958 $\pm$ 0.064 & 0.988 $\pm$ 0.005 & 0.050 \\
+SL & 0.75 & 0.802 $\pm$ 0.121 & 0.902 $\pm$ 0.099 & 0.981 $\pm$ 0.011 & 0.179 \\
+
+
+======== Feature x beta grid ========
+BMSB: best LQH beta 2.0 CBI 0.991 vs reference 0.986 (gain +0.005)
+CE: best LQH beta 1.5 CBI 0.985 vs reference 0.981 (gain +0.004)
+SM: best LQHP beta 2.0 CBI 0.550 vs reference 0.499 (gain +0.051)
+RW: best LQ beta 2.0 CBI 0.912 vs reference 0.842 (gain +0.071)
+SL: best LQH beta 1.5 CBI 0.977 vs reference 0.967 (gain +0.010)
+
+======== Projected changes (ACCESS-CM2, P10, 2041-2060) ========
+BMSB: baseline P10 share 21.4 % (1684 thousand km2); change 2041-2060 across SSPs -34 to -22 %; CI excludes 0 in 4/4 pathways; SSP2-4.5: -26 [-29, -23] % (0.5 cut-off -18, maxSSS -21); d mean suitability -0.026
+    centroid (cont.) +259 km [+249, +268]; P10 centroid +353; trailing edge +410 [+370, +448]; leading edge +217 [+206, +229]; baseline centroid 39.2 N
+    2021-2040 across SSPs -20 to -13 %
+CE: baseline P10 share 20.1 % (1586 thousand km2); change 2041-2060 across SSPs -48 to -28 %; CI excludes 0 in 4/4 pathways; SSP2-4.5: -32 [-38, -26] % (0.5 cut-off -43, maxSSS -31); d mean suitability -0.034
+    centroid (cont.) +7 km [-2, +15]; P10 centroid +13; trailing edge +17 [-43, +68]; leading edge +153 [+139, +167]; baseline centroid 39.1 N
+    2021-2040 across SSPs -32 to -18 %
+SM: baseline P10 share 13.1 % (1036 thousand km2); change 2041-2060 across SSPs -21 to -14 %; CI excludes 0 in 4/4 pathways; SSP2-4.5: -18 [-20, -17] % (0.5 cut-off -14, maxSSS -20); d mean suitability -0.022
+    centroid (cont.) +60 km [+57, +63]; P10 centroid +87; trailing edge +105 [+101, +110]; leading edge +71 [+58, +84]; baseline centroid 41.4 N
+    2021-2040 across SSPs -17 to -14 %
+RW: baseline P10 share 2.0 % (160 thousand km2); change 2041-2060 across SSPs +74 to +93 %; CI excludes 0 in 4/4 pathways; SSP2-4.5: +81 [+76, +86] % (0.5 cut-off +124, maxSSS +45); d mean suitability +0.012
+    centroid (cont.) +9 km [+1, +18]; P10 centroid +98; trailing edge +44 [+39, +50]; leading edge +30 [-10, +77]; baseline centroid 31.1 N
+    2021-2040 across SSPs +68 to +82 %
+SL: baseline P10 share 4.0 % (315 thousand km2); change 2041-2060 across SSPs -62 to -46 %; CI excludes 0 in 4/4 pathways; SSP2-4.5: -57 [-59, -56] % (0.5 cut-off -62, maxSSS -46); d mean suitability -0.021
+    centroid (cont.) +216 km [+213, +219]; P10 centroid +200; trailing edge +284 [+276, +292]; leading edge +163 [+156, +170]; baseline centroid 40.5 N
+    2021-2040 across SSPs -53 to -37 %
+
+======== Threshold sign agreement (SSP2-4.5, 2041-2060) ========
+BMSB: signs {'05': -1.0, 'p10': -1.0, 'maxsss': -1.0}; spread of the three estimates 9 points; baseline shares 0.5 10.8 %, P10 21.4 %, maxSSS 13.1 %
+CE: signs {'05': -1.0, 'p10': -1.0, 'maxsss': -1.0}; spread of the three estimates 11 points; baseline shares 0.5 17.3 %, P10 20.1 %, maxSSS 20.4 %
+SM: signs {'05': -1.0, 'p10': -1.0, 'maxsss': -1.0}; spread of the three estimates 6 points; baseline shares 0.5 11.3 %, P10 13.1 %, maxSSS 14.8 %
+RW: signs {'05': 1.0, 'p10': 1.0, 'maxsss': 1.0}; spread of the three estimates 79 points; baseline shares 0.5 1.3 %, P10 2.0 %, maxSSS 3.5 %
+SL: signs {'05': -1.0, 'p10': -1.0, 'maxsss': -1.0}; spread of the three estimates 16 points; baseline shares 0.5 3.1 %, P10 4.0 %, maxSSS 6.8 %
+
+======== Centroid direction over all SSPs, 2041-2060 ========
+BMSB: centroid shift +242 to +279 km; CI excludes 0 in 4/4
+CE: centroid shift -28 to +34 km; CI excludes 0 in 3/4
+SM: centroid shift +60 to +72 km; CI excludes 0 in 4/4
+RW: centroid shift -11 to +40 km; CI excludes 0 in 4/4
+SL: centroid shift +216 to +263 km; CI excludes 0 in 4/4
+
+======== GCM spread vs sampling spread (P10 area change, 2041-2060) ========
+BMSB SSP1-2.6: mean -4 %, SD between GCMs 17, SD within 5, sign agreement 3/5; {'ACCESS-CM2': -21.65, 'EC-Earth3-Veg': 10.83, 'MIROC6': -8.77, 'MPI-ESM1-2-HR': 16.44, 'UKESM1-0-LL': -16.39}
+BMSB SSP2-4.5: mean -10 %, SD between GCMs 15, SD within 6, sign agreement 4/5; {'ACCESS-CM2': -26.27, 'EC-Earth3-Veg': 12.06, 'MIROC6': -10.11, 'MPI-ESM1-2-HR': -3.24, 'UKESM1-0-LL': -21.5}
+BMSB SSP3-7.0: mean -9 %, SD between GCMs 20, SD within 6, sign agreement 3/5; {'ACCESS-CM2': -28.95, 'EC-Earth3-Veg': 18.18, 'MIROC6': -11.01, 'MPI-ESM1-2-HR': 3.24, 'UKESM1-0-LL': -25.43}
+BMSB SSP5-8.5: mean -10 %, SD between GCMs 21, SD within 7, sign agreement 3/5; {'ACCESS-CM2': -33.83, 'EC-Earth3-Veg': 18.82, 'MIROC6': -12.35, 'MPI-ESM1-2-HR': 0.85, 'UKESM1-0-LL': -24.13}
+CE SSP1-2.6: mean -19 %, SD between GCMs 18, SD within 7, sign agreement 4/5; {'ACCESS-CM2': -28.21, 'EC-Earth3-Veg': -7.8, 'MIROC6': -14.62, 'MPI-ESM1-2-HR': 0.59, 'UKESM1-0-LL': -45.68}
+CE SSP2-4.5: mean -23 %, SD between GCMs 21, SD within 8, sign agreement 5/5; {'ACCESS-CM2': -31.64, 'EC-Earth3-Veg': -12.7, 'MIROC6': -13.92, 'MPI-ESM1-2-HR': -0.41, 'UKESM1-0-LL': -54.95}
+CE SSP3-7.0: mean -27 %, SD between GCMs 21, SD within 9, sign agreement 5/5; {'ACCESS-CM2': -42.53, 'EC-Earth3-Veg': -6.43, 'MIROC6': -19.62, 'MPI-ESM1-2-HR': -9.23, 'UKESM1-0-LL': -55.34}
+CE SSP5-8.5: mean -29 %, SD between GCMs 25, SD within 10, sign agreement 4/5; {'ACCESS-CM2': -47.76, 'EC-Earth3-Veg': -11.14, 'MIROC6': -24.12, 'MPI-ESM1-2-HR': 0.26, 'UKESM1-0-LL': -60.18}
+RW SSP1-2.6: mean +82 %, SD between GCMs 16, SD within 9, sign agreement 5/5; {'ACCESS-CM2': 92.11, 'EC-Earth3-Veg': 71.16, 'MIROC6': 88.03, 'MPI-ESM1-2-HR': 59.67, 'UKESM1-0-LL': 97.15}
+RW SSP2-4.5: mean +75 %, SD between GCMs 14, SD within 10, sign agreement 5/5; {'ACCESS-CM2': 81.19, 'EC-Earth3-Veg': 73.4, 'MIROC6': 81.33, 'MPI-ESM1-2-HR': 51.9, 'UKESM1-0-LL': 86.15}
+RW SSP3-7.0: mean +80 %, SD between GCMs 10, SD within 11, sign agreement 5/5; {'ACCESS-CM2': 92.88, 'EC-Earth3-Veg': 68.31, 'MIROC6': 87.9, 'MPI-ESM1-2-HR': 76.14, 'UKESM1-0-LL': 76.94}
+RW SSP5-8.5: mean +88 %, SD between GCMs 25, SD within 13, sign agreement 5/5; {'ACCESS-CM2': 73.75, 'EC-Earth3-Veg': 87.51, 'MIROC6': 107.52, 'MPI-ESM1-2-HR': 53.87, 'UKESM1-0-LL': 115.67}
+SL SSP1-2.6: mean -21 %, SD between GCMs 32, SD within 5, sign agreement 4/5; {'ACCESS-CM2': -45.88, 'EC-Earth3-Veg': -1.01, 'MIROC6': -8.76, 'MPI-ESM1-2-HR': 12.35, 'UKESM1-0-LL': -64.06}
+SL SSP2-4.5: mean -39 %, SD between GCMs 31, SD within 4, sign agreement 5/5; {'ACCESS-CM2': -57.42, 'EC-Earth3-Veg': -15.35, 'MIROC6': -10.16, 'MPI-ESM1-2-HR': -29.01, 'UKESM1-0-LL': -84.67}
+SL SSP3-7.0: mean -38 %, SD between GCMs 37, SD within 5, sign agreement 5/5; {'ACCESS-CM2': -61.44, 'EC-Earth3-Veg': -22.61, 'MIROC6': -10.81, 'MPI-ESM1-2-HR': -5.08, 'UKESM1-0-LL': -90.77}
+SL SSP5-8.5: mean -43 %, SD between GCMs 34, SD within 4, sign agreement 5/5; {'ACCESS-CM2': -62.0, 'EC-Earth3-Veg': -16.5, 'MIROC6': -13.08, 'MPI-ESM1-2-HR': -30.05, 'UKESM1-0-LL': -93.82}
+SM SSP1-2.6: mean -5 %, SD between GCMs 15, SD within 4, sign agreement 3/5; {'ACCESS-CM2': -14.41, 'EC-Earth3-Veg': 10.33, 'MIROC6': -14.07, 'MPI-ESM1-2-HR': 12.75, 'UKESM1-0-LL': -18.91}
+SM SSP2-4.5: mean -9 %, SD between GCMs 12, SD within 4, sign agreement 4/5; {'ACCESS-CM2': -18.25, 'EC-Earth3-Veg': 9.35, 'MIROC6': -13.12, 'MPI-ESM1-2-HR': -3.41, 'UKESM1-0-LL': -20.43}
+SM SSP3-7.0: mean -7 %, SD between GCMs 17, SD within 5, sign agreement 3/5; {'ACCESS-CM2': -20.93, 'EC-Earth3-Veg': 13.42, 'MIROC6': -4.34, 'MPI-ESM1-2-HR': 5.3, 'UKESM1-0-LL': -27.16}
+SM SSP5-8.5: mean -8 %, SD between GCMs 20, SD within 5, sign agreement 3/5; {'ACCESS-CM2': -20.47, 'EC-Earth3-Veg': 19.0, 'MIROC6': -15.45, 'MPI-ESM1-2-HR': 8.06, 'UKESM1-0-LL': -29.49}
+ratio between/within: median 3.1, range 0.9-7.9
+
+======== Importance BMSB (20 fits) ========
+Bio2: mean 0.134 ± 0.042 (range 0.045-0.219); top3 18/20; top5 20/20; mean rank 1.8
+Bio1: mean 0.114 ± 0.027 (range 0.068-0.156); top3 14/20; top5 19/20; mean rank 2.6
+Bio5: mean 0.103 ± 0.013 (range 0.078-0.122); top3 12/20; top5 20/20; mean rank 3.2
+Bio15: mean 0.099 ± 0.016 (range 0.063-0.125); top3 9/20; top5 20/20; mean rank 3.3
+Bio4: mean 0.067 ± 0.024 (range 0.014-0.107); top3 2/20; top5 13/20; mean rank 5.8
+Bio19: mean 0.057 ± 0.030 (range 0.014-0.098); top3 5/20; top5 7/20; mean rank 6.7
+Bio12: mean 0.032 ± 0.012 (range 0.010-0.062); top3 0/20; top5 0/20; mean rank 8.2
+Bio13: mean 0.032 ± 0.008 (range 0.013-0.044); top3 0/20; top5 0/20; mean rank 8.2
+first-ranked predictor per fit: {'Bio2': 10, 'Bio1': 7, 'Bio15': 3}
+elevation rank: 11.75
+
+======== Drift ========
+1 km: cells changed 1 %, rho 0.992 (min 0.974), top3 overlap 2.4, top1 same 1.0, dropped 180
+5 km: cells changed 5 %, rho 0.990 (min 0.978), top3 overlap 2.3, top1 same 1.0, dropped 181
+10 km: cells changed 18 %, rho 0.985 (min 0.965), top3 overlap 2.9, top1 same 0.9, dropped 194
+50 km: cells changed 83 %, rho 0.953 (min 0.881), top3 overlap 2.3, top1 same 0.6, dropped 329
+fresh draws: rho 0.914 ± 0.047 (min 0.842), top3 overlap 2.4, top1 same 0.4
+
+======== Background points kept of 10,000 (all losses come from the kernel share: m = 0 keeps 10,000) ========
+BMSB m=0.00: kept 10000-10000 (mean 10000); effective kernel share 0.000-0.000
+BMSB m=0.25: kept 9786-9846 (mean 9805); effective kernel share 0.234-0.238
+BMSB m=0.50: kept 9578-9654 (mean 9612); effective kernel share 0.478-0.482
+BMSB m=0.75: kept 9387-9464 (mean 9419); effective kernel share 0.734-0.736
+BMSB m=1.00: kept 9155-9275 (mean 9218); effective kernel share 1.000-1.000
+CE m=0.00: kept 10000-10000 (mean 10000); effective kernel share 0.000-0.000
+CE m=0.25: kept 9826-9869 (mean 9840); effective kernel share 0.237-0.240
+CE m=0.50: kept 9639-9740 (mean 9677); effective kernel share 0.481-0.487
+CE m=0.75: kept 9472-9538 (mean 9511); effective kernel share 0.736-0.738
+CE m=1.00: kept 9301-9441 (mean 9343); effective kernel share 1.000-1.000
+SM m=0.00: kept 10000-10000 (mean 10000); effective kernel share 0.000-0.000
+SM m=0.25: kept 9951-9969 (mean 9960); effective kernel share 0.246-0.248
+SM m=0.50: kept 9908-9940 (mean 9920); effective kernel share 0.495-0.497
+SM m=0.75: kept 9859-9893 (mean 9877); effective kernel share 0.746-0.747
+SM m=1.00: kept 9822-9865 (mean 9838); effective kernel share 1.000-1.000
+RW m=0.00: kept 10000-10000 (mean 10000); effective kernel share 0.000-0.000
+RW m=0.25: kept 9072-9186 (mean 9120); effective kernel share 0.173-0.184
+RW m=0.50: kept 8171-8339 (mean 8239); effective kernel share 0.388-0.400
+RW m=0.75: kept 7274-7443 (mean 7366); effective kernel share 0.656-0.664
+RW m=1.00: kept 6326-6563 (mean 6452); effective kernel share 1.000-1.000
+SL m=0.00: kept 10000-10000 (mean 10000); effective kernel share 0.000-0.000
+SL m=0.25: kept 9717-9772 (mean 9744); effective kernel share 0.228-0.233
+SL m=0.50: kept 9468-9535 (mean 9502); effective kernel share 0.472-0.476
+SL m=0.75: kept 9184-9303 (mean 9262); effective kernel share 0.728-0.731
+SL m=1.00: kept 8931-9051 (mean 9009); effective kernel share 1.000-1.000
+all species: m=0.25 kept 9072-9969; m=1 kept 6326-9865
+
+======== Predictors dropped by the correlation filter (number of fits of 20, by m) ========
+BMSB
+m          0.00  0.25  0.50  0.75  1.00
+predictor                              
+Bio10        20    20    20    20    20
+Bio11        20    20    20    20    20
+Bio16        20    20    20    20    20
+Bio17        20    20    20    20    20
+Bio19         0     0     4    20    20
+Bio7         20    18    20    20    20
+CE
+m          0.00  0.25  0.50  0.75  1.00
+predictor                              
+Bio10        20    20    20    20    20
+Bio11        20    20    20    20    20
+Bio13        19     0     0     0     0
+Bio15         0     0     0     0     3
+Bio16        20    20    20    20    20
+Bio17        20    20    20    20    20
+Bio19         0     0     0     0    20
+Bio5          0     0     0     0    10
+Bio6          8    20    20    20    20
+Bio7         20     9    20    20    20
+SM
+m          0.00  0.25  0.50  0.75  1.00
+predictor                              
+Bio10        20    20    20    20    20
+Bio11        20    20    20    20    20
+Bio13        20     0     0     0     0
+Bio14         0     0     0     0    20
+Bio15         0     0     0     0    20
+Bio16        20    20    20    20    20
+Bio17        20    20    20    20    20
+Bio18         0     0     0     0    20
+Bio19         0     0     0     0    20
+Bio6          1    13    20    20    20
+Bio7         20     3    10    20    20
+Bio9          0     0     0     0    20
+RW
+m          0.00  0.25  0.50  0.75  1.00
+predictor                              
+Bio10        20    20    20    20     0
+Bio11        20    20    20    20    20
+Bio13        20    20    20     0     0
+Bio15         0     0     0     0    20
+Bio16        20    20    20    20    20
+Bio17        20    20    20    20    20
+Bio18         0     0     0     7    20
+Bio6         20    20    20    20    20
+Bio7         20    20    20    20    20
+SL
+m          0.00  0.25  0.50  0.75  1.00
+predictor                              
+Bio10        20    20    20    20    20
+Bio11        20    20    20    20    20
+Bio16        20    20    20    20    20
+Bio17        20    20    20    20    20
+Bio18         0     0     0     0    20
+Bio19         0     0     0     0    20
+Bio5          0     0     0     0    20
+Bio6          1     9    15    20    20
+Bio7         10     0     0     0     0
+dropped in every fit of every species: ['Bio11', 'Bio16', 'Bio17']
+
+======== Novelty, ACCESS-CM2: % of land / % of future P10 area with a predictor outside the training range ========
+BMSB 2040 SSP1-2.6: 4.2 / 1.6; 2040 SSP2-4.5: 4.8 / 1.8; 2040 SSP3-7.0: 5.6 / 1.9; 2040 SSP5-8.5: 4.0 / 1.7; 2060 SSP1-2.6: 7.2 / 1.9; 2060 SSP2-4.5: 7.5 / 2.3; 2060 SSP3-7.0: 7.1 / 2.1; 2060 SSP5-8.5: 9.8 / 2.2
+CE 2040 SSP1-2.6: 4.5 / 0.8; 2040 SSP2-4.5: 5.3 / 0.7; 2040 SSP3-7.0: 6.2 / 1.6; 2040 SSP5-8.5: 4.5 / 0.1; 2060 SSP1-2.6: 7.4 / 3.0; 2060 SSP2-4.5: 7.9 / 1.7; 2060 SSP3-7.0: 7.9 / 1.6; 2060 SSP5-8.5: 10.4 / 2.9
+SM 2040 SSP1-2.6: 4.8 / 0.0; 2040 SSP2-4.5: 5.5 / 0.2; 2040 SSP3-7.0: 6.5 / 0.3; 2040 SSP5-8.5: 4.8 / 0.0; 2060 SSP1-2.6: 7.6 / 0.4; 2060 SSP2-4.5: 8.2 / 0.1; 2060 SSP3-7.0: 8.3 / 0.1; 2060 SSP5-8.5: 10.8 / 0.1
+RW 2040 SSP1-2.6: 3.9 / 9.8; 2040 SSP2-4.5: 4.6 / 9.6; 2040 SSP3-7.0: 5.3 / 9.3; 2040 SSP5-8.5: 3.8 / 9.4; 2060 SSP1-2.6: 6.9 / 16.9; 2060 SSP2-4.5: 7.3 / 19.0; 2060 SSP3-7.0: 6.8 / 14.9; 2060 SSP5-8.5: 9.5 / 18.5
+SL 2040 SSP1-2.6: 4.9 / 0.0; 2040 SSP2-4.5: 5.7 / 0.0; 2040 SSP3-7.0: 6.7 / 0.3; 2040 SSP5-8.5: 4.9 / 0.0; 2060 SSP1-2.6: 7.7 / 4.1; 2060 SSP2-4.5: 8.3 / 0.0; 2060 SSP3-7.0: 8.6 / 0.0; 2060 SSP5-8.5: 11.0 / 0.0
+
+======== Threshold sign agreement, ACCESS-CM2, every pathway and period (0.5 / P10 / maxSSS / mean suitability) ========
+BMSB 2021_2040 SSP1-2.6: -4 / -15 / -7 %, d mean suit -0.015
+BMSB 2021_2040 SSP2-4.5: -8 / -18 / -11 %, d mean suit -0.016
+BMSB 2021_2040 SSP3-7.0: -17 / -20 / -18 %, d mean suit -0.019
+BMSB 2021_2040 SSP5-8.5: -3 / -13 / -6 %, d mean suit -0.013
+BMSB 2041_2060 SSP1-2.6: -18 / -22 / -19 %, d mean suit -0.024
+BMSB 2041_2060 SSP2-4.5: -18 / -26 / -21 %, d mean suit -0.026
+BMSB 2041_2060 SSP3-7.0: -21 / -29 / -24 %, d mean suit -0.028
+BMSB 2041_2060 SSP5-8.5: -25 / -34 / -28 %, d mean suit -0.035
+CE 2021_2040 SSP1-2.6: -32 / -22 / -22 %, d mean suit -0.026
+CE 2021_2040 SSP2-4.5: -29 / -18 / -18 %, d mean suit -0.021
+CE 2021_2040 SSP3-7.0: -35 / -24 / -24 %, d mean suit -0.027
+CE 2021_2040 SSP5-8.5: -43 / -32 / -32 %, d mean suit -0.035
+CE 2041_2060 SSP1-2.6: -39 / -28 / -28 %, d mean suit -0.033
+CE 2041_2060 SSP2-4.5: -43 / -32 / -31 %, d mean suit -0.034
+CE 2041_2060 SSP3-7.0: -54 / -43 / -42 %, d mean suit -0.043
+CE 2041_2060 SSP5-8.5: -56 / -48 / -47 %, d mean suit -0.049
+SM 2021_2040 SSP1-2.6: -14 / -17 / -19 %, d mean suit -0.022
+SM 2021_2040 SSP2-4.5: -9 / -14 / -16 %, d mean suit -0.018
+SM 2021_2040 SSP3-7.0: -13 / -15 / -16 %, d mean suit -0.020
+SM 2021_2040 SSP5-8.5: -13 / -16 / -17 %, d mean suit -0.021
+SM 2041_2060 SSP1-2.6: -9 / -14 / -17 %, d mean suit -0.021
+SM 2041_2060 SSP2-4.5: -14 / -18 / -20 %, d mean suit -0.022
+SM 2041_2060 SSP3-7.0: -17 / -21 / -23 %, d mean suit -0.028
+SM 2041_2060 SSP5-8.5: -16 / -20 / -23 %, d mean suit -0.030
+RW 2021_2040 SSP1-2.6: +118 / +82 / +38 %, d mean suit +0.011
+RW 2021_2040 SSP2-4.5: +100 / +75 / +36 %, d mean suit +0.009
+RW 2021_2040 SSP3-7.0: +100 / +68 / +34 %, d mean suit +0.010
+RW 2021_2040 SSP5-8.5: +120 / +79 / +48 %, d mean suit +0.013
+RW 2041_2060 SSP1-2.6: +145 / +92 / +39 %, d mean suit +0.014
+RW 2041_2060 SSP2-4.5: +124 / +81 / +45 %, d mean suit +0.012
+RW 2041_2060 SSP3-7.0: +125 / +93 / +48 %, d mean suit +0.013
+RW 2041_2060 SSP5-8.5: +96 / +74 / +38 %, d mean suit +0.011
+SL 2021_2040 SSP1-2.6: -51 / -45 / -30 %, d mean suit -0.015
+SL 2021_2040 SSP2-4.5: -41 / -38 / -32 %, d mean suit -0.014
+SL 2021_2040 SSP3-7.0: -44 / -37 / -31 %, d mean suit -0.015
+SL 2021_2040 SSP5-8.5: -59 / -53 / -42 %, d mean suit -0.018
+SL 2041_2060 SSP1-2.6: -50 / -46 / -31 %, d mean suit -0.015
+SL 2041_2060 SSP2-4.5: -62 / -57 / -46 %, d mean suit -0.021
+SL 2041_2060 SSP3-7.0: -70 / -61 / -43 %, d mean suit -0.022
+SL 2041_2060 SSP5-8.5: -67 / -62 / -43 %, d mean suit -0.021
+
+======== Ratio of climate-model spread to sampling spread by species (P10 area, 2041-2060) ========
+BMSB: ratio 2.5-3.2; SD between 15-21; SD within 5-7; five-model mean -10 to -4
+CE: ratio 2.3-2.5; SD between 18-25; SD within 7-10; five-model mean -29 to -19
+SM: ratio 3.3-4.4; SD between 12-20; SD within 4-5; five-model mean -9 to -5
+RW: ratio 0.9-1.9; SD between 10-25; SD within 9-13; five-model mean +75 to +88
+SL: ratio 6.8-7.9; SD between 31-37; SD within 4-5; five-model mean -43 to -21
+four species: ratio 2.3-7.9 (median 3.2); all five median 3.1
+
+======== Thinning table ========
+BMSB & 13,755 & 1,452 & 1,412 & 1,202 & 676 & 734 & 2 \\
+CE & 45,119 & 728 & 719 & 687 & 351 & 366 & 2 \\
+SM & 132 & 66 & 66 & 65 & 29 & 35 & 2 \\
+RW & 1,084 & 202 & 170 & 135 & 90 & 78 & 2 \\
+SL & 25,193 & 693 & 664 & 508 & 334 & 328 & 2 \\
+
+
+======== One record per cell (S8) ========
+BMSB & 1,412 & 1,202 & 0.985 $\pm$ 0.007 & 0.987 $\pm$ 0.005 & $-$26 $\pm$ 7 & $-$32 $\pm$ 6 \\
+RW & 170 & 135 & 0.888 $\pm$ 0.034 & 0.880 $\pm$ 0.043 & 81 $\pm$ 12 & 64 $\pm$ 16 \\
+SL & 664 & 508 & 0.976 $\pm$ 0.010 & 0.982 $\pm$ 0.008 & $-$57 $\pm$ 4 & $-$57 $\pm$ 5 \\
+
+
+======== All records (S7) ========
+SM & 0.00 & 0.623 $\pm$ 0.086 & 0.691 $\pm$ 0.069 &  &  \\
+ & 0.25 & 0.462 $\pm$ 0.069 & 0.760 $\pm$ 0.146 & $-$18 $\pm$ 3 & $-$50 $\pm$ 4 \\
+ & 0.50 & 0.295 $\pm$ 0.075 & 0.485 $\pm$ 0.058 &  &  \\
+ & 0.75 & 0.202 $\pm$ 0.034 & 0.343 $\pm$ 0.045 &  &  \\
+ & 1.00 & 0.039 $\pm$ 0.098 & 0.271 $\pm$ 0.023 &  &  \\
+\midrule
+RW & 0.00 & 0.837 $\pm$ 0.064 & 0.846 $\pm$ 0.069 &  &  \\
+ & 0.25 & 0.888 $\pm$ 0.034 & 0.918 $\pm$ 0.025 & 81 $\pm$ 12 & 60 $\pm$ 12 \\
+ & 0.50 & 0.903 $\pm$ 0.048 & 0.916 $\pm$ 0.049 &  &  \\
+ & 0.75 & 0.890 $\pm$ 0.065 & 0.924 $\pm$ 0.043 &  &  \\
+ & 1.00 & 0.605 $\pm$ 0.077 & 0.526 $\pm$ 0.033 &  &  \\
+
+
+======== Grid table ========
+BMSB & LQH & 2.0 & 0.991 & 0.986 & $-$33.3 $\pm$ 6.0 & $-$26.3 $\pm$ 7.2 \\
+CE & LQH & 1.5 & 0.985 & 0.981 & $-$37.4 $\pm$ 14.9 & $-$31.6 $\pm$ 14.0 \\
+SM & LQHP & 2.0 & 0.550 & 0.499 & $-$17.5 $\pm$ 2.3 & $-$18.2 $\pm$ 3.3 \\
+RW & LQ & 2.0 & 0.912 & 0.842 & $-$0.6 $\pm$ 2.1 & 81.2 $\pm$ 11.7 \\
+SL & LQH & 1.5 & 0.977 & 0.967 & $-$45.7 $\pm$ 2.5 & $-$57.4 $\pm$ 4.3 \\
+
+
+======== Shift table ========
+BMSB & 39.2 & +259 [+249, +268] & +353 [+342, +364] & +410 [+370, +448] & +217 [+206, +229] & 44 & 40 & 2 \\
+CE & 39.1 & +7 [$-$2, +15] & +13 [$-$3, +28] & +17 [$-$43, +68] & +153 [+139, +167] & 59 & 13 & 2 \\
+SM & 41.4 & +60 [+57, +63] & +87 [+82, +91] & +105 [+101, +110] & +71 [+58, +84] & 76 & 8 & 0 \\
+RW & 31.1 & +9 [+1, +18] & +98 [+90, +105] & +44 [+39, +50] & +30 [$-$10, +77] & 91 & 49 & 19 \\
+SL & 40.5 & +216 [+213, +219] & +200 [+196, +205] & +284 [+276, +292] & +163 [+156, +170] & 30 & 29 & 0 \\
+

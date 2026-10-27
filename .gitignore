@@ -1,0 +1,51 @@
+# Python environment (recreate with scripts/setup_venv.sh; elapid lives in ../elapid/elapid)
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+temp_*/
+.DS_Store
+
+# Inputs and outputs stay on disk next to the code (tens of GB)
+data/
+runs/
+logs/
+remote_text/
+remote_text_pull.typescript
+*.zip
+*.bundle
+*.log
+
+# Manuscript: build products, compiled PDFs, and superseded submission bundles
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.out
+*.spl
+*.pag
+*.toc
+Maxent_Paper/Maxent_Paper_MDPI_Insects/main.pdf
+Maxent_Paper/Maxent_Paper_MDPI_Insects/SI.pdf
+Maxent_Paper/Maxent_Paper_MDPI_Insects/cover_letter.pdf
+Maxent_Paper/Maxent_Paper_MDPI_Insects/response_to_reviewers.pdf
+Maxent_Paper/Maxent_Paper_For_Submission_MDPI/
+Maxent_Paper/MDPI_Article_Template/
+
+# Marked-up manuscript (scripts/make_latexdiff.sh) and per-fit analysis tables
+Maxent_Paper/Maxent_Paper_MDPI_Insects/main_diff.*
+# Revision 2 build outputs
+Maxent_Paper/Maxent_Paper_MDPI_Insects_Revision2/*.pdf
+Maxent_Paper/Maxent_Paper_MDPI_Insects_Revision2/main_diff*
+Maxent_Paper/Maxent_Paper_MDPI_Insects_Revision2/*.bbl
+Maxent_Paper/Maxent_Paper_MDPI_Insects_Revision2/*.blg
+Maxent_Paper/Maxent_Paper_MDPI_Insects_Revision2/*.out
+Maxent_Paper/Maxent_Paper_MDPI_Insects_Revision2/*.fls
+Maxent_Paper/Maxent_Paper_MDPI_Insects_Revision2/*.fdb_latexmk
+docs/tables/projections_long.csv
+docs/tables/projections_changes.csv
+docs/tables/*_raw.csv

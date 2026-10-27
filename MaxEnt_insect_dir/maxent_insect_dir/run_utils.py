@@ -1,0 +1,263 @@
+# packages
+import os
+import numpy as np
+import pandas as pd
+import geopandas as gpd
+import rasterio as rio
+import matplotlib.pyplot as plt
+
+from maxent_insect_dir.config import MPLSTYLE_PATH
+
+plt.style.use(str(MPLSTYLE_PATH))
+
+from sklearn import metrics
+import elapid as ela
+
+from maxent_insect_dir import config, utils, plot_functions, Continuous_boyce_index
+
+
+def resolve_save_path(base_path, filename):
+    """Resolve file path for saving plot outputs."""
+    return False if isinstance(base_path, (bool, type(None))) else os.path.join(base_path, filename)
+
+
+def get_presence_background(
+    insect_name,
+    uniform_raster,
+    to_thin=True,
+    bias_uniform_mix_coeff=0.75,
+    background_count=10000,
+    plot=False,
+    save_path=False,
+    thinning_distance=None,
+    kernel_radius=utils.DEFAULT_KERNEL_RADIUS,
+    one_per_cell=False,
+    accessible_area=None,
+):
+    """
+    Reads and optionally thins presence data, and samples background points based on spatial bias.
+
+    Args:
+        insect_name: Key in ``config.Insect_list``.
+        uniform_raster: Raster path used for uniform background sampling.
+        to_thin: Whether to apply spatial thinning.
+        bias_uniform_mix_coeff: Mixing coefficient ``m`` for bias vs uniform backgrounds.
+        background_count: Number of background points to sample.
+        plot: Whether to display diagnostic plots.
+        save_path: Directory for saved figures, or falsy to skip saving.
+        thinning_distance: Override (metres) for the species thinning distance
+            in ``config.spatial_thinning_distance``. ``None`` keeps the config.
+        kernel_radius: Kernel radius (metres) of the presence-biased background.
+
+    Returns:
+        Tuple of thinned presence and background GeoDataFrames.
+    """
+    insect_source = config.Insect_list[insect_name]
+    if not to_thin:
+        thinning_distance = None
+    elif thinning_distance is None:
+        thinning_distance = config.spatial_thinning_distance.get(insect_name)
+
+    presence = gpd.read_file(insect_source)[["geometry"]]
+    presence_thinned = utils.spatial_thinning(presence, thinning_distance)
+    if one_per_cell:
+        # Keep at most one record per cell of the climate raster (first in file order).
+        with rio.open(uniform_raster) as src:
+            ll = presence_thinned.to_crs(src.crs)
+            rows, cols = rio.transform.rowcol(src.transform, ll.geometry.x.values, ll.geometry.y.values)
+        dup = pd.Series(list(zip(np.asarray(rows), np.asarray(cols)))).duplicated().values
+        print(f"one record per cell: {len(presence_thinned)} -> {int((~dup).sum())}\n")
+        presence_thinned = presence_thinned.loc[~dup].reset_index(drop=True)
+
+    background = utils.spatial_weighted_background(
+        presence=presence_thinned,
+        uniform_raster=uniform_raster,
+        bias_uniform_mix_coeff=bias_uniform_mix_coeff,
+        count=background_count,
+        kernel_radius=kernel_radius,
+        mask_raster=accessible_area,
+    )
+    if accessible_area is not None:
+        # The kernel surface is built from all thinned records, as in the runs without M, and then
+        # limited to M. Records outside M (only records on cells without climate data, which are
+        # dropped at annotation anyway) are removed here.
+        inside = utils.inside_mask(presence_thinned, accessible_area)
+        print(f"accessible area {os.path.basename(str(accessible_area))}: {int(inside.sum())} of {len(presence_thinned)} thinned records inside\n")
+        presence_thinned = presence_thinned.loc[inside].reset_index(drop=True)
+
+    print(f'Presence original : {presence.shape} | Presence spatially thinned : {presence_thinned.shape} | background : {background.shape}..\n')
+
+    save_path_ = resolve_save_path(save_path, 'presence_background.png')
+    plot_functions.plot_presence_background(presence, presence_thinned, background, plot, save_path_)
+
+    assert np.all(np.sort(presence_thinned.columns.values) == np.sort(background.columns.values)), 'Different col in presence and absence'
+
+    return presence_thinned, background
+
+
+def annotate(points, rasters, labels, drop_na=True):
+    """
+    Annotates points with raster values using provided labels.
+    """
+    return ela.annotate(points, rasters, labels=labels, drop_na=drop_na)
+
+
+def remove_correlated_columns(presence, background, cols_for_uncorrelated_cal, threshold=0.9, plot=False, save_path=False, tag=None):
+    """
+    Removes highly correlated features from presence/background data.
+    """
+    merged = ela.stack_geodataframes(presence, background, add_class_label=False)
+    corr_matrix = merged[cols_for_uncorrelated_cal].corr()
+    df_uncorrelated = utils.remove_highly_correlated(merged[cols_for_uncorrelated_cal], threshold=threshold)
+    corr_matrix_uncorrelated = df_uncorrelated.corr()
+
+    plot_functions.plot_correlation_matrix(
+        corr_matrix,
+        "Correlation Matrix Before Removing Highly Correlated Features",
+        plot,
+        resolve_save_path(save_path, f'corr_matrix_{tag}_before.png')
+    )
+
+    plot_functions.plot_correlation_matrix(
+        corr_matrix_uncorrelated,
+        "Correlation Matrix After Removing Highly Correlated Features",
+        plot,
+        resolve_save_path(save_path, f'corr_matrix_{tag}_after.png')
+    )
+
+    return df_uncorrelated.columns
+
+
+def get_ks(presence, background, labels, plot=False, save_path=False):
+    """
+    Computes and optionally plots KS-test-style distributions between presence and background.
+    """
+    save_path_ = resolve_save_path(save_path, 'presence_background_distribution.png')
+    return plot_functions.plot_presence_background_feature_distribution(presence, background, labels, plot, save_path_)
+
+
+def prepare_test_train(presence, train_background, test_background, plot=False, save_path=False, swap_folds=False):
+    """
+    Splits presence into train/test and stacks with background points.
+    """
+    train_presence, test_presence = utils.get_train_test_split(presence, swap=swap_folds)
+
+    df_train = ela.stack_geodataframes(train_presence, train_background, add_class_label=True)
+    x_train = df_train.drop(columns=['class', 'geometry'])
+    y_train = df_train['class']
+
+    df_test = ela.stack_geodataframes(test_presence, test_background, add_class_label=True)
+    x_test = df_test.drop(columns=['class', 'geometry'])
+    y_test = df_test['class']
+
+    print(f'train_presence : {train_presence.shape} | test_presence : {test_presence.shape} | train_background : {train_background.shape} | test_background : {test_background.shape}...\n\n')
+
+    save_path_ = resolve_save_path(save_path, 'presence_train_test_split.png')
+    plot_functions.plot_train_test_split(train_presence, test_presence, plot=plot, title='Presence', save_path=save_path_)
+    
+    save_path_ = resolve_save_path(save_path, 'background_train_test_split.png')
+    plot_functions.plot_train_test_split(train_background, test_background, plot=plot, title='Background', save_path=save_path_)
+    
+    return {
+        "x_train": x_train,
+        "y_train": y_train,
+        "x_test": x_test,
+        "y_test": y_test
+    }
+
+
+def train_model(x_train, y_train, cat_indices=None, tau=0.5, beta_multiplier=2.0, feature_type='lph'):
+    """Train one cloglog MaxEnt model.
+
+    The performance-table models used ``feature_type='lph'`` and
+    ``beta_multiplier=2.0``. Those are also the defaults of this function.
+    The CLI default beta is 1.5, so a bare ``python -m maxent_insect_dir.run``
+    does not hit this default: ``run.py`` passes the CLI value in.
+
+    ``feature_type`` may be an elapid letter string (``lph``) or a list of
+    names. ``lph`` becomes linear, product, and hinge.
+    """
+    print(f'Training model with tau={tau}, beta_multiplier={beta_multiplier}, feature_type={feature_type}...\n')
+    model = ela.MaxentModel(transform='cloglog', tau=tau, beta_multiplier=beta_multiplier, feature_types=feature_type)
+    model.fit(x_train, y_train, categorical=cat_indices)
+    return model
+
+
+def evaluate(model, x_test, y_test, x_train, y_train, cat_indices, plot=False, save_path=False):
+    """
+    Evaluates the trained model using AUC and Continuous Boyce Index (CBI), and plots feature importance & PDP.
+    """
+    feature_importance = utils.get_feature_importance(model, x_test, y_test)
+
+    plot_functions.plot_feature_importance(
+        feature_importance,
+        plot,
+        resolve_save_path(save_path, 'feature_importance.png')
+    )
+
+    auc = {'AUC_test': metrics.roc_auc_score(y_test, model.predict(x_test))}
+
+    nbins = 20
+    # CBI on train
+    cbi_train = Continuous_boyce_index.continuous_boyce_index(
+        yobs=model.predict(x_train[y_train == 1]),
+        ypred=model.predict(x_train[y_train == 0]),
+        nbins=nbins,
+        to_plot=False
+    )
+    plot_functions.plot_PE_curve(
+        x=np.mean(cbi_train['HS'], axis=1),
+        y=cbi_train['F.ratio'],
+        plot=plot,
+        save_path=resolve_save_path(save_path, 'cbi_train.png')
+    )
+
+    # CBI on test
+    cbi_test = Continuous_boyce_index.continuous_boyce_index(
+        yobs=model.predict(x_test[y_test == 1]),
+        ypred=model.predict(x_test[y_test == 0]),
+        nbins=nbins,
+        to_plot=False
+    )
+    plot_functions.plot_PE_curve(
+        x=np.mean(cbi_test['HS'], axis=1),
+        y=cbi_test['F.ratio'],
+        plot=plot,
+        save_path=resolve_save_path(save_path, 'cbi_test.png')
+    )
+
+    # Partial dependency plot
+    # plot_functions.plot_partial_dependency(
+    #     model,
+    #     x_train,
+    #     cat_indices,
+    #     plot,
+    #     resolve_save_path(save_path, 'partial_dependency_plot.png')
+    # )
+
+    return feature_importance, auc, cbi_train, cbi_test
+
+
+def compute_projections(model, rasters, output_raster, tag, plot=False, save_path=False, template_idx=None):
+    """
+    Applies trained model to raster stack and visualizes spatial predictions.
+
+    The output grid follows ``rasters[template_idx]``. By default the first
+    bioclim layer (10 arc-min) is the template, so the suitability raster is on
+    the climate grid and the finer elevation layer is averaged into each cell.
+    (Before Oct 2026 the first raster, the 1 arc-min elevation layer, was the
+    template, which made every projection ~150 times larger.)
+    """
+    if template_idx is None:
+        template_idx = next((i for i, r in enumerate(rasters) if "Bio" in os.path.basename(str(r))), 0)
+    ela.apply_model_to_rasters(model, rasters, output_raster, quiet=True, template_idx=template_idx)
+
+    with rio.open(output_raster, 'r') as src:
+        pred = src.read(1, masked=True)
+
+    plot_functions.plot_projection(
+        pred,
+        tag,
+        plot,
+        resolve_save_path(save_path, f'projection_{tag}.png')
+    )

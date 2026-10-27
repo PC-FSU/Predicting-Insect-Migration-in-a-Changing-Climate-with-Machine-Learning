@@ -1,0 +1,5 @@
+BMSB: 13755 records; without year 0; year 1999-2023; dated <= 2000: 1; within 1 km of a state centroid: 2; coordinates with <= 1 decimal: 3 records at 3 distinct sites
+CE: 45119 records; without year 0; year 2007-2023; dated <= 2000: 0; within 1 km of a state centroid: 0; coordinates with <= 1 decimal: 951 records at 18 distinct sites
+SM: 132 records; without year 0; year 2007-2024; dated <= 2000: 0; within 1 km of a state centroid: 0; coordinates with <= 1 decimal: 0 records at 0 distinct sites
+RW: 1084 records; without year 0; year 2010-2023; dated <= 2000: 0; within 1 km of a state centroid: 0; coordinates with <= 1 decimal: 0 records at 0 distinct sites
+SL: 25193 records; without year 0; year 2014-2024; dated <= 2000: 0; within 1 km of a state centroid: 2; coordinates with <= 1 decimal: 12 records at 12 distinct sites
